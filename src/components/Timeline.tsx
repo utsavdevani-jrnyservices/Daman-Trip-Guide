@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Lock, RotateCcw, X } from "lucide-react";
 import { DAY_META } from "../data/itinerary";
 import type { Step } from "../types";
+import { fmtTime, type Slot } from "../lib/schedule";
 
 interface Props {
   open: boolean;
@@ -9,12 +10,13 @@ interface Props {
   stepIndex: number;
   choices: Record<string, string>;
   notes: Record<string, string>;
+  schedule: Slot[];
   onClose: () => void;
   onJump: (index: number) => void;
   onReset: () => void;
 }
 
-export default function Timeline({ open, steps, stepIndex, choices, notes, onClose, onJump, onReset }: Props) {
+export default function Timeline({ open, steps, stepIndex, choices, notes, schedule, onClose, onJump, onReset }: Props) {
   return (
     <AnimatePresence>
       {open && (
@@ -87,7 +89,7 @@ export default function Timeline({ open, steps, stepIndex, choices, notes, onClo
                             >
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45">
-                                  <span>{s.time}</span>
+                                  <span>{schedule[i].fixed ? fmtTime(schedule[i].arrive, 1) : `~${fmtTime(schedule[i].arrive)}`}</span>
                                   {chosen && (
                                     <span className="rounded-full bg-white/10 px-1.5 py-0.5 normal-case tracking-normal text-white/70">
                                       {chosen.emoji} {chosen.freeText && notes[s.id]?.trim() ? notes[s.id].trim() : chosen.label}

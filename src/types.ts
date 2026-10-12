@@ -35,6 +35,8 @@ export interface Choice {
   recommended?: boolean;
   rating?: Rating;
   mapsUrl?: string;
+  /** Minutes this option takes (overrides / adds to the step's stayMin). */
+  stayMin?: number;
   /** The group must type something before moving on. */
   freeText?: boolean;
   freeTextPlaceholder?: string;
@@ -55,10 +57,16 @@ export interface Link {
 export interface Step {
   id: string;
   day: 1 | 2;
-  /** Best time to be here, e.g. "6:30 AM". */
+  /** Fallback display time, e.g. "6:30 AM" (the schedule engine computes the real window). */
   time: string;
-  /** How long we spend here, e.g. "45 min". */
+  /** How long we spend here, e.g. "45 min" (display fallback). */
   duration?: string;
+  /** Minutes spent at this stop. */
+  stayMin?: number;
+  /** Earliest arrival, "HH:MM" 24h. Fixed things: trains, check-in, scooter drop. */
+  anchor?: string;
+  /** Shown when the group would arrive before the anchor: what to do with the free time. */
+  slackHint?: string;
   title: string;
   subtitle: string;
   description: string;

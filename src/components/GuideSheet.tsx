@@ -1,9 +1,10 @@
 import { forwardRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp, Clock, Copy, ExternalLink, Hourglass, Lock, MapPin, RotateCcw, Sparkles, Star,
+  AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp, Copy, ExternalLink, Hourglass, Lock, MapPin, RotateCcw, Sparkles, Star,
 } from "lucide-react";
 import type { Rating, Step } from "../types";
+import { fmtDur, fmtKm, fmtTime, TRANSPORT_VERB, type Slot } from "../lib/schedule";
 import type { PlanItem } from "../hooks/useItinerary";
 import { STOP_SVG, VEHICLE_LABEL, VEHICLE_SVG } from "./mapIcons";
 
@@ -16,6 +17,7 @@ interface Props {
   progress: number;
   accent: string;
   legKm?: number;
+  slot: Slot;
   choiceId?: string;
   note: string;
   choiceMade: boolean;
@@ -61,7 +63,7 @@ const WhatsAppIcon = () => (
 );
 
 const GuideSheet = forwardRef<HTMLDivElement, Props>(function GuideSheet(
-  { step, prevStep, stepIndex, total, phase, progress, accent, legKm, choiceId, note, choiceMade, isLast, plan, message, onNext, onBack, onChoose, onNote, onReset },
+  { step, prevStep, stepIndex, total, phase, progress, accent, legKm, slot, choiceId, note, choiceMade, isLast, plan, message, onNext, onBack, onChoose, onNote, onReset },
   ref,
 ) {
   const [collapsed, setCollapsed] = useState(false);
@@ -108,10 +110,20 @@ const GuideSheet = forwardRef<HTMLDivElement, Props>(function GuideSheet(
                   <div className="mt-0.5 font-display text-[22px] leading-[1.1] text-white">
                     {prevStep?.title} <span className="text-white/35">→</span> {step.title}
                   </div>
-                  <div className="mt-1 text-[13px] text-white/60">
-                    {step.legLabel}
-                    {legKm ? ` · ${legKm < 1 ? `${Math.round(legKm * 1000)} m` : `${legKm.toFixed(1)} km`}` : ""}
-                  </div>
+                </div>
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 leading-tight">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">Distance</div>
+                  <div className="text-[17px] font-bold text-white">{legKm != null ? fmtKm(legKm) : "–"}</div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 leading-tight">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">{TRANSPORT_VERB[transport]}</div>
+                  <div className="text-[17px] font-bold text-white">{transport === "train" ? step.legLabel?.split(" · ")[0] ?? "–" : `≈${fmtDur(slot.travelMin)}`}</div>
+                </div>
+                <div className="rounded-xl border px-3 py-2 leading-tight" style={{ borderColor: `${accent}55`, background: `${accent}12` }}>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">Arrive</div>
+                  <div className="text-[15px] font-bold text-white">{slot.fixed ? fmtTime(slot.arrive, 1) : `~${fmtTime(slot.arrive)}`}</div>
                 </div>
               </div>
               <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10">
@@ -141,25 +153,29 @@ const GuideSheet = forwardRef<HTMLDivElement, Props>(function GuideSheet(
                 </div>
               </div>
 
-              {/* Timing strip */}
-              <div className="mt-3 flex gap-2">
-                <div className="flex flex-1 items-center gap-2 rounded-xl border px-3 py-2" style={{ borderColor: `${accent}55`, background: `${accent}12` }}>
-                  <Clock size={15} style={{ color: accent }} />
-                  <div className="leading-tight">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">Best time</div>
-                    <div className="text-[15px] font-bold text-white">{step.time}</div>
-                  </div>
+              {/* Timing window */}
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <div className="rounded-xl border px-3 py-2 leading-tight" style={{ borderColor: `${accent}55`, background: `${accent}12` }}>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">{slot.fixed ? "At" : "Arrive"}</div>
+                  <div className="text-[15px] font-bold text-white">{slot.fixed ? fmtTime(slot.arrive, 1) : `~${fmtTime(slot.arrive)}`}</div>
                 </div>
-                {step.duration && (
-                  <div className="flex flex-1 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-                    <Hourglass size={15} className="text-white/60" />
-                    <div className="leading-tight">
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">Time here</div>
-                      <div className="text-[15px] font-bold text-white">{step.duration}</div>
-                    </div>
-                  </div>
-                )}
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 leading-tight">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">Time here</div>
+                  <div className="text-[16px] font-bold text-white">{slot.stay > 0 ? `≈${fmtDur(slot.stay)}` : step.duration ?? "–"}</div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 leading-tight">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">Leave by</div>
+                  <div className="text-[15px] font-bold text-white">{slot.stay > 0 ? `~${fmtTime(slot.leave)}` : "–"}</div>
+                </div>
               </div>
+              {slot.slack >= 10 && (
+                <div className="mt-2 flex items-start gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                  <Hourglass size={14} className="mt-0.5 shrink-0" style={{ color: accent }} />
+                  <p className="text-[12.5px] leading-snug text-white/75">
+                    <span className="font-semibold text-white">≈{fmtDur(Math.round(slot.slack / 5) * 5)} free</span> before this. {step.slackHint ?? ""}
+                  </p>
+                </div>
+              )}
 
               <AnimatePresence initial={false}>
                 {!collapsed && (
@@ -172,6 +188,9 @@ const GuideSheet = forwardRef<HTMLDivElement, Props>(function GuideSheet(
                     )}
 
                     <p className="mt-3.5 text-[15px] leading-[1.55] text-white/80">{step.description}</p>
+                    {!slot.fixed && slot.stay > 0 && stepIndex > 0 && (
+                      <p className="mt-1.5 text-[11.5px] text-white/40">Times are a guide, give or take 15 minutes. They move with the options the group picks.</p>
+                    )}
 
                     {step.why && (
                       <div className="mt-3 rounded-2xl border px-3.5 py-3" style={{ borderColor: `${accent}33`, background: `${accent}0d` }}>
@@ -235,6 +254,11 @@ const GuideSheet = forwardRef<HTMLDivElement, Props>(function GuideSheet(
                                     )}
                                   </span>
                                   {opt.hint && <span className="mt-0.5 block text-[12px] text-white/55">{opt.hint}</span>}
+                                  {opt.stayMin != null && opt.stayMin > 0 && (
+                                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-white/80">
+                                      <Hourglass size={10} /> ≈{fmtDur(opt.stayMin)}
+                                    </span>
+                                  )}
                                   {opt.why && <span className="mt-1 block text-[12.5px] leading-snug text-white/75">{opt.why}</span>}
                                   {(opt.rating || opt.mapsUrl) && (
                                     <span className="mt-1.5 flex flex-wrap items-center gap-2">

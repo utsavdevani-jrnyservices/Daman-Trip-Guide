@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer } from "react";
 import { DAY_META, steps as baseSteps } from "../data/itinerary";
 import { routeBetween } from "../lib/routes";
+import { computeSchedule, fmtDur, fmtTime, type Slot } from "../lib/schedule";
 import type { Choice, LatLng, Step } from "../types";
 
 export type Phase = "idle" | "traveling";
@@ -118,25 +119,28 @@ export interface PlanItem {
   note?: string;
 }
 
-/** WhatsApp-formatted itinerary built from every step and the group's picks. */
-export function buildWhatsAppMessage(steps: Step[], choices: Record<string, string>, notes: Record<string, string>): string {
-  const lines: string[] = ["*Daman trip – our itinerary* 🗓️", ""];
+/** WhatsApp-formatted itinerary built from every step, the computed times and the group's picks. */
+export function buildWhatsAppMessage(steps: Step[], slots: Slot[], choices: Record<string, string>, notes: Record<string, string>): string {
+  const lines: string[] = ["*Daman trip – our itinerary* 🗓️", "_3–4 Nov 2026 · times are a guide, give or take 15 min_", ""];
   let day: 1 | 2 | 0 = 0;
-  for (const s of steps) {
+  steps.forEach((s, i) => {
     if (s.day !== day) {
       day = s.day;
       if (day === 2) lines.push("");
       lines.push(`*${DAY_META[day].label} · ${DAY_META[day].name}*`);
     }
+    const slot = slots[i];
     const opt = chosenOption(s, choices);
     const note = opt?.freeText ? (notes[s.id] ?? "").trim() : "";
-    lines.push(`• ${s.time} – ${s.title}`);
+    const when = slot.fixed ? fmtTime(slot.arrive, 1) : `~${fmtTime(slot.arrive)}`;
+    const stay = slot.stay >= 15 ? ` (${fmtDur(slot.stay)})` : "";
+    lines.push(`• ${when} – ${s.title}${stay}`);
     if (opt && s.choices) {
       const label = s.choices.prompt.replace(/\s*plan\?$/i, "").replace(/\?$/, "");
       const pick = note ? `${opt.id === "suggest" ? "📍 " : ""}${note}` : opt.label;
       lines.push(`   ↳ ${label}: ${pick}`);
     }
-  }
+  });
   lines.push("", "Train out: 12935, Andheri 6:42 AM. Train back: 12936, Vapi 5:40 PM.", "_Made with the Daman Trip Guide_");
   return lines.join("\n");
 }
@@ -186,7 +190,8 @@ export function useItinerary() {
     [steps, state.choices, state.notes],
   );
 
-  const message = useMemo(() => buildWhatsAppMessage(steps, state.choices, state.notes), [steps, state.choices, state.notes]);
+  const schedule = useMemo(() => computeSchedule(steps, state.choices), [steps, state.choices]);
+  const message = useMemo(() => buildWhatsAppMessage(steps, schedule, state.choices, state.notes), [steps, schedule, state.choices, state.notes]);
 
-  return { state, step, prevStep, steps, choiceMade, isLast, activeLeg, plan, message, next, back, jump, choose, setNote, arrived, reset };
+  return { state, step, prevStep, steps, schedule, choiceMade, isLast, activeLeg, plan, message, next, back, jump, choose, setNote, arrived, reset };
 }

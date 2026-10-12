@@ -87,6 +87,7 @@ export default function App() {
         isLast={it.isLast}
         plan={it.plan}
         message={it.message}
+        slot={it.schedule[it.state.stepIndex]}
         legKm={it.activeLeg?.km}
         onNext={it.next}
         onBack={it.back}
@@ -101,6 +102,7 @@ export default function App() {
         stepIndex={it.state.stepIndex}
         choices={it.state.choices}
         notes={it.state.notes}
+        schedule={it.schedule}
         onClose={() => setTimelineOpen(false)}
         onJump={it.jump}
         onReset={it.reset}

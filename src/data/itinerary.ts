@@ -41,6 +41,7 @@ function suggest(at: LatLng): Choice {
     hint: "Type the place name and locality, or paste a Google Maps link",
     coordinates: at,
     emoji: "📍",
+    stayMin: 60,
     freeText: true,
     freeTextPlaceholder: "e.g. Hotel Gurukripa, Seaface Road, Nani Daman",
     noPin: true,
@@ -51,6 +52,8 @@ export const steps: Step[] = [
   // ── DAY 1 · NANI DAMAN ────────────────────────────────────────────────────
   {
     id: "andheri",
+    anchor: "06:30",
+    stayMin: 12,
     day: 1,
     time: "6:30 AM",
     duration: "Departure",
@@ -70,6 +73,8 @@ export const steps: Step[] = [
   },
   {
     id: "vapi-arrive",
+    anchor: "09:02",
+    stayMin: 20,
     day: 1,
     time: "9:02 AM",
     duration: "15–20 min",
@@ -88,14 +93,14 @@ export const steps: Step[] = [
   },
   {
     id: "moustache-arrive",
+    stayMin: 30,
     day: 1,
     time: "9:45 AM",
     duration: "30 min",
     title: "Moustache Daman",
     subtitle: "Our stay · Panch Rasta, Nani Daman",
     description:
-      "Drop the luggage at reception (check-in is at 12:30 PM) and take 30 minutes to change and freshen up. Then decide how we do breakfast.",
-    why: "Picked for the location: 3 minutes on foot from Nani Daman Fort, 5 from the seaface, and the scooter rental delivers here.",
+      "Drop the luggage at reception (check-in is at 12:30 PM), 30 minutes to change and freshen up, then breakfast. Pick one:",
     coordinates: MOUSTACHE,
     iconType: "hostel",
     transport: "car",
@@ -108,6 +113,7 @@ export const steps: Step[] = [
       options: [
         {
           id: "jalaram",
+          stayMin: 60,
           label: "Jalaram Khaman House",
           hint: "Gujarati farsan breakfast · 6 min walk · about 1 hour including the walk",
           why: "The local Gujarati breakfast spot: khaman, sev khamani, khandvi, fafda-jalebi and locho. Cheap, fast and 430 m from the stay.",
@@ -118,6 +124,7 @@ export const steps: Step[] = [
         },
         {
           id: "cafe",
+          stayMin: 30,
           label: "Moustache's own cafe",
           hint: "Upstairs at the stay · about 30 minutes · reviews call the food basic but fine",
           coordinates: MOUSTACHE,
@@ -125,6 +132,7 @@ export const steps: Step[] = [
         },
         {
           id: "common",
+          stayMin: 30,
           label: "Hang out in the common area",
           hint: "Order something if hungry · about 30 minutes",
           coordinates: MOUSTACHE,
@@ -132,6 +140,7 @@ export const steps: Step[] = [
         },
         {
           id: "other",
+          stayMin: 60,
           label: "Skip breakfast, do something else",
           hint: "Type what you'd rather do",
           coordinates: MOUSTACHE,
@@ -146,6 +155,7 @@ export const steps: Step[] = [
   },
   {
     id: "breakfast",
+    stayMin: 45,
     day: 1,
     time: "10:15 AM",
     duration: "1 hour",
@@ -160,6 +170,7 @@ export const steps: Step[] = [
     variantsFor: "moustache-arrive",
     variants: {
       jalaram: {
+        stayMin: 60,
         title: "Jalaram Khaman House",
         subtitle: "Gujarati breakfast · 10:15 – 11:15 AM",
         description:
@@ -171,6 +182,7 @@ export const steps: Step[] = [
         mapsUrl: maps("Jalaram Khaman House, Nani Daman"),
       },
       cafe: {
+        stayMin: 30,
         title: "Breakfast at the cafe",
         subtitle: "Moustache Daman · 10:15 – 10:45 AM",
         duration: "30 min",
@@ -178,6 +190,7 @@ export const steps: Step[] = [
         tips: ["Done by 10:45 AM"],
       },
       common: {
+        stayMin: 30,
         title: "Common area",
         subtitle: "Moustache Daman · 10:15 – 10:45 AM",
         duration: "30 min",
@@ -185,12 +198,14 @@ export const steps: Step[] = [
         tips: ["Done by 10:45 AM"],
       },
       other: {
+        stayMin: 60,
         title: "Your plan",
         subtitle: "Instead of breakfast · 10:15 – 11:15 AM",
         description: "The group chose to skip breakfast and do this instead: {note}. Be back at Moustache by 11:15 AM.",
         tips: ["Back by 11:15 AM"],
       },
       suggest: {
+        stayMin: 60,
         title: "Your breakfast place",
         subtitle: "Group suggestion · 10:15 – 11:15 AM",
         description: "Breakfast at the place the group suggested: {note}. Be back at Moustache by 11:15 AM.",
@@ -200,6 +215,7 @@ export const steps: Step[] = [
   },
   {
     id: "nani-fort",
+    stayMin: 60,
     day: 1,
     time: "11:15 AM",
     duration: "1 hour",
@@ -220,10 +236,13 @@ export const steps: Step[] = [
   },
   {
     id: "checkin",
+    anchor: "12:30",
+    stayMin: 60,
+    slackHint: "A slow walk back along the seaface, or a drink at the stay.",
     day: 1,
     time: "12:30 PM",
     duration: "1 hour + lunch",
-    title: "Check-in",
+    title: "Check-in & lunch",
     subtitle: "Moustache Daman",
     fixed: "Check-in 12:30 PM",
     description: "Check in, move the bags to the rooms and take an hour to settle. Then lunch, and the scooters arrive at 3 PM.",
@@ -238,6 +257,7 @@ export const steps: Step[] = [
       options: [
         {
           id: "delite",
+          stayMin: 60,
           label: "Daman Delite · seafood",
           hint: "Hotel Gurukripa, Seaface Road · 5 min walk · about 1 hour",
           why: "The best-known seafood kitchen in Nani Daman. Reviewers rate the pomfret Damanese fry, fish pahadi tikka and the seafood platter. Good veg options too.",
@@ -249,6 +269,7 @@ export const steps: Step[] = [
         },
         {
           id: "cafe",
+          stayMin: 45,
           label: "Moustache's own cafe",
           hint: "No travel · about 45 minutes",
           coordinates: MOUSTACHE,
@@ -260,6 +281,9 @@ export const steps: Step[] = [
   },
   {
     id: "scooters",
+    anchor: "15:00",
+    stayMin: 15,
+    slackHint: "Settle into the rooms, charge phones.",
     day: 1,
     time: "3:00 PM",
     duration: "15 min",
@@ -280,8 +304,9 @@ export const steps: Step[] = [
       options: [
         {
           id: "mirasol",
+          stayMin: 90,
           label: "Mirasol Lake Garden",
-          hint: "8.5 km · 15 min ride · 1.5 to 2 hours",
+          hint: "8.5 km · 25 min ride · about 1.5 hours",
           why: "A man-made lake with two green islands joined by a bridge. Pedal boats (about ₹200 per boat for 20 min), a toy train (₹50) and a restaurant on the island. Entry around ₹100. Best in the mid-afternoon, before the Devka sunset.",
           coordinates: MIRASOL,
           emoji: "🚤",
@@ -291,6 +316,7 @@ export const steps: Step[] = [
         },
         {
           id: "devka-early",
+          stayMin: 110,
           label: "Straight to Devka Beach",
           hint: "3.6 km · 10 min ride · longer time on the beach",
           coordinates: DEVKA,
@@ -299,6 +325,7 @@ export const steps: Step[] = [
         },
         {
           id: "rest",
+          stayMin: 90,
           label: "Rest at the hostel until 5 PM",
           hint: "No travel · leave for Devka at 5 PM",
           coordinates: MOUSTACHE,
@@ -310,6 +337,7 @@ export const steps: Step[] = [
   },
   {
     id: "afternoon",
+    stayMin: 90,
     day: 1,
     time: "3:30 PM",
     duration: "1.5–2 hours",
@@ -324,10 +352,11 @@ export const steps: Step[] = [
     variantsFor: "scooters",
     variants: {
       mirasol: {
+        stayMin: 90,
         title: "Mirasol Lake Garden",
         subtitle: "Kadaiya · 3:30 – 5:15 PM",
         description:
-          "Boating on the lake, the toy train, and a cold drink at the island restaurant. Leave by 5:15 PM for Devka, it is a 10-minute ride and the sun sets around 6.",
+          "Boating on the lake, the toy train, and a cold drink at the island restaurant. Leave by 5:15 PM for Devka: a 13-minute ride, and the sun sets at 6.",
         coordinates: MIRASOL,
         legLabel: "15 min · Scooter",
         rating: { stars: 4.4, reviews: "1,000+ reviews" },
@@ -335,6 +364,7 @@ export const steps: Step[] = [
         tips: ["Leave by 5:15 PM", "Boat ~₹200 / 20 min", "Toy train ₹50"],
       },
       "devka-early": {
+        stayMin: 110,
         title: "Devka Beach, early",
         subtitle: "3:30 PM onwards",
         description:
@@ -345,6 +375,7 @@ export const steps: Step[] = [
         mapsUrl: maps("Devka Beach, Daman"),
       },
       rest: {
+        stayMin: 90,
         title: "Rest at Moustache",
         subtitle: "3:30 – 5:00 PM",
         duration: "1.5 hours",
@@ -353,6 +384,7 @@ export const steps: Step[] = [
         tips: ["Leave at 5:00 PM"],
       },
       suggest: {
+        stayMin: 90,
         title: "Your afternoon place",
         subtitle: "Group suggestion · 3:30 – 5:15 PM",
         description: "The afternoon at the place the group suggested: {note}. Be at Devka Beach by 5:30 PM for the sunset.",
@@ -362,6 +394,9 @@ export const steps: Step[] = [
   },
   {
     id: "devka",
+    anchor: "17:30",
+    stayMin: 90,
+    slackHint: "The promenade stalls and the rocks while the light goes.",
     day: 1,
     time: "5:30 PM",
     duration: "1.5 hours",
@@ -369,8 +404,8 @@ export const steps: Step[] = [
     subtitle: "Sunset",
     fixed: "Sunset ~6 PM",
     description:
-      "Sunset over the rocks around 6 PM. Black sand, tide pools, camel and pony rides, and stalls along the shore. Not for swimming. Stay till it gets dark, then ride back to the fort area for dinner.",
-    why: "The one place in Daman where the sunset is the event: the rocky shoreline turns red and the sea pulls back a long way. Best between 5:30 and 7 PM.",
+      "Sunset on 3 Nov is at about 6:00 PM. Black sand, tide pools, camel and pony rides, and stalls along the shore. Not for swimming. Stay till it gets dark, then ride back to the fort area for dinner.",
+    why: "The one place in Daman where the sunset is the event: the rocky shoreline turns red and the sea pulls back a long way. Be there by 5:30, the sun is down by 6:05.",
     coordinates: DEVKA,
     iconType: "beach",
     transport: "scooter",
@@ -383,6 +418,7 @@ export const steps: Step[] = [
       options: [
         {
           id: "jetty",
+          stayMin: 60,
           label: "Daman Jetty Rolls",
           hint: "Street food behind the fort · 10 min ride · about 1 hour",
           why: "Daman's own street food: the jetty roll, a local take on the kathi roll, with separate veg and non-veg stalls. The most reviewed food spot in Nani Daman and cheap.",
@@ -394,6 +430,7 @@ export const steps: Step[] = [
         },
         {
           id: "aahar",
+          stayMin: 60,
           label: "Aahar Fast Food · Seaface Road",
           hint: "Fast-food stop on the seaface, next to the night market · open till 10:30 PM · about 1 hour",
           why: "Second most-rated cheap eat in Nani Daman, right on the seaface walk. Papri and chaat stalls are along the same road.",
@@ -404,6 +441,7 @@ export const steps: Step[] = [
         },
         {
           id: "suggest",
+          stayMin: 60,
           label: "Suggest a different place",
           hint: "Place name, locality and a line about it, or a Google Maps link",
           coordinates: SEAFACE,
@@ -417,6 +455,7 @@ export const steps: Step[] = [
   },
   {
     id: "dinner",
+    stayMin: 60,
     day: 1,
     time: "8:00 PM",
     duration: "1 hour",
@@ -432,14 +471,16 @@ export const steps: Step[] = [
     variantsFor: "devka",
     variants: {
       jetty: {
+        stayMin: 60,
         title: "Daman Jetty Rolls",
         subtitle: "Street food behind the fort",
         description:
-          "Chicken and egg rolls, paneer roll for vegetarians, plus pav bhaji and chaat from the stalls around. Separate veg and non-veg counters. Weekends get crowded, so 8 PM is the right time.",
+          "Chicken and egg rolls, paneer roll for vegetarians, plus pav bhaji and chaat from the stalls around. Separate veg and non-veg counters. It is a Tuesday evening, so no weekend crowd.",
         rating: { stars: 4.3, reviews: "1,900+ reviews" },
         mapsUrl: maps("Daman Jetty Rolls, Nani Daman"),
       },
       aahar: {
+        stayMin: 60,
         title: "Aahar Fast Food",
         subtitle: "Sea Face Road, Nani Daman",
         description: "Fast food on the seaface, a short walk from the night market stalls. Open till 10:30 PM. Try the papri from the stalls along the road after.",
@@ -448,6 +489,7 @@ export const steps: Step[] = [
         mapsUrl: maps("Aahar Fast Food, Sea Face Road, Nani Daman"),
       },
       suggest: {
+        stayMin: 60,
         title: "Your dinner place",
         subtitle: "Group suggestion",
         description: "Dinner at the place the group suggested: {note}. Then the night market walk at 9 PM.",
@@ -457,6 +499,7 @@ export const steps: Step[] = [
   },
   {
     id: "night-market",
+    stayMin: 75,
     day: 1,
     time: "9:00 PM",
     duration: "1–1.5 hours",
@@ -477,6 +520,8 @@ export const steps: Step[] = [
   // ── DAY 2 · MOTI DAMAN ────────────────────────────────────────────────────
   {
     id: "day2-breakfast",
+    anchor: "09:30",
+    stayMin: 0,
     day: 2,
     time: "9:30 AM",
     duration: "45 min",
@@ -494,6 +539,7 @@ export const steps: Step[] = [
       options: [
         {
           id: "cafe",
+          stayMin: 30,
           label: "Moustache's own cafe",
           hint: "No travel · 30 minutes · packs well before check-out",
           why: "Check-out is at 11. Eating at the stay keeps the morning simple.",
@@ -503,19 +549,22 @@ export const steps: Step[] = [
         },
         {
           id: "jalaram",
+          stayMin: 60,
           label: "Jalaram Khaman House again",
           hint: "6 min walk · about 1 hour including the walk",
           coordinates: JALARAM,
           emoji: "🍽️",
           mapsUrl: maps("Jalaram Khaman House, Nani Daman"),
         },
-        { id: "skip", label: "Skip breakfast", hint: "Early lunch in Moti Daman instead", coordinates: MOUSTACHE, emoji: "⏭️", noPin: true },
+        { id: "skip", stayMin: 0, label: "Skip breakfast", hint: "Early lunch in Moti Daman instead", coordinates: MOUSTACHE, emoji: "⏭️", noPin: true },
         suggest(MOUSTACHE),
       ],
     },
   },
   {
     id: "checkout",
+    anchor: "10:30",
+    stayMin: 20,
     day: 2,
     time: "10:30 AM",
     duration: "30 min",
@@ -533,6 +582,7 @@ export const steps: Step[] = [
   },
   {
     id: "moti-fort",
+    stayMin: 90,
     day: 2,
     time: "11:00 AM",
     duration: "1.5 hours",
@@ -552,6 +602,7 @@ export const steps: Step[] = [
   },
   {
     id: "bom-jesus",
+    stayMin: 45,
     day: 2,
     time: "12:30 PM",
     duration: "45 min",
@@ -573,6 +624,7 @@ export const steps: Step[] = [
       options: [
         {
           id: "fortalezza",
+          stayMin: 60,
           label: "Fortalezza · inside the fort",
           hint: "Veg & non-veg, continental and Chinese · 12 PM onwards · about ₹1,300 for two",
           why: "The only sit-down restaurant inside the fort walls, 300 m from Pargola Garden, so no riding around in the afternoon heat. Few online reviews yet.",
@@ -583,6 +635,7 @@ export const steps: Step[] = [
         },
         {
           id: "backyard",
+          stayMin: 60,
           label: "The Backyard Cafe",
           hint: "Dominican Monastery Lane, fort area · cafe-style Italian and Chinese",
           coordinates: BACKYARD,
@@ -596,6 +649,7 @@ export const steps: Step[] = [
   },
   {
     id: "pargola",
+    stayMin: 60,
     day: 2,
     time: "2:30 PM",
     duration: "1 hour",
@@ -616,6 +670,7 @@ export const steps: Step[] = [
   },
   {
     id: "wrap-up",
+    stayMin: 30,
     day: 2,
     time: "3:45 PM",
     duration: "30 min",
@@ -633,6 +688,9 @@ export const steps: Step[] = [
   },
   {
     id: "vapi-depart",
+    anchor: "17:00",
+    stayMin: 40,
+    slackHint: "Tea on the platform. The train leaves at 5:40 PM.",
     day: 2,
     time: "5:00 PM",
     duration: "Train 5:40 PM",
@@ -651,6 +709,8 @@ export const steps: Step[] = [
   },
   {
     id: "home",
+    anchor: "20:08",
+    stayMin: 0,
     day: 2,
     time: "8:08 PM",
     duration: "Arrival",
