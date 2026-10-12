@@ -1,10 +1,12 @@
-# Deploys the app to GitHub Pages on every push to the default branch.
-# Enable Pages (Settings → Pages → Source: GitHub Actions) once, then it just works.
+# Deploys the app to GitHub Pages on every push to the listed branches.
+# One-time setup: Settings → Pages → Source: "GitHub Actions". Then this runs on
+# every push, or manually from the Actions tab via "Run workflow".
+# Live URL: https://utsavdevani-jrnyservices.github.io/Daman-Trip-Guide/
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, ccr-742efe2b-kmf2vh]
   workflow_dispatch:
 
 permissions:
