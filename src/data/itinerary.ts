@@ -21,7 +21,7 @@ export const MIRASOL: LatLng = [20.4603, 72.854];
 export const DEVKA: LatLng = [20.4458, 72.833];
 export const JETTY_ROLLS: LatLng = [20.4145, 72.832];
 export const SEAFACE: LatLng = [20.4155, 72.8315];
-export const MOTI_FORT: LatLng = [20.407, 72.8342];
+export const MOTI_FORT: LatLng = [20.4098, 72.835]; // north walls, by the old bridge
 export const BOM_JESUS: LatLng = [20.4068, 72.8343];
 export const LIGHTHOUSE: LatLng = [20.4096, 72.8307];
 export const FORTALEZZA: LatLng = [20.4059, 72.8353];
@@ -245,7 +245,7 @@ export const steps: Step[] = [
     title: "Check-in & lunch",
     subtitle: "Moustache Daman",
     fixed: "Check-in 12:30 PM",
-    description: "Check in, move the bags to the rooms and take an hour to settle. Then lunch, and the scooters arrive at 3 PM.",
+    description: "Check in, move the bags to the rooms and take an hour to settle. Then lunch. Pick one:",
     coordinates: MOUSTACHE,
     iconType: "checkin",
     transport: "walk",
@@ -277,6 +277,44 @@ export const steps: Step[] = [
         },
         suggest(MOUSTACHE),
       ],
+    },
+  },
+  {
+    id: "lunch-day1",
+    day: 1,
+    time: "1:30 PM",
+    stayMin: 60,
+    title: "Lunch",
+    subtitle: "Nani Daman",
+    description: "Lunch.",
+    coordinates: MOUSTACHE,
+    iconType: "food",
+    transport: "walk",
+    zoom: 16,
+    actionLabel: "Back to Moustache",
+    variantsFor: "checkin",
+    variants: {
+      delite: {
+        stayMin: 60,
+        title: "Daman Delite",
+        subtitle: "Hotel Gurukripa, Seaface Road",
+        description: "Seafood lunch: pomfret Damanese fry, fish pahadi tikka, the seafood platter. Veg options on the menu too. Then walk back to the stay for the scooters at 3.",
+        coordinates: DELITE,
+        rating: { stars: 4.3, reviews: "1,000+ reviews" },
+        mapsUrl: maps("Daman Delite Restaurant, Hotel Gurukripa, Nani Daman"),
+      },
+      cafe: {
+        stayMin: 45,
+        title: "Lunch at the cafe",
+        subtitle: "Moustache Daman",
+        description: "Lunch at Moustache's cafe. About 45 minutes, then the scooters arrive at 3.",
+      },
+      suggest: {
+        stayMin: 60,
+        title: "Your lunch place",
+        subtitle: "Group suggestion",
+        description: "Lunch at the place the group suggested: {note}. Back at Moustache for the scooters at 3.",
+      },
     },
   },
   {
@@ -525,15 +563,15 @@ export const steps: Step[] = [
     day: 2,
     time: "9:30 AM",
     duration: "45 min",
-    title: "Day 2 breakfast",
+    title: "Good morning",
     subtitle: "Moustache Daman",
-    description: "Breakfast before check-out. Bags have to be out of the rooms by 11 AM, so keep this one short.",
+    description: "Breakfast before check-out. Bags have to be out of the rooms by 11 AM, so keep this one short. Pick one:",
     coordinates: MOUSTACHE,
     iconType: "food",
     transport: "scooter",
     legLabel: "Short ride",
     zoom: 16,
-    actionLabel: "Check out",
+    actionLabel: "Continue",
     choices: {
       prompt: "Breakfast plan?",
       options: [
@@ -559,6 +597,34 @@ export const steps: Step[] = [
         { id: "skip", stayMin: 0, label: "Skip breakfast", hint: "Early lunch in Moti Daman instead", coordinates: MOUSTACHE, emoji: "⏭️", noPin: true },
         suggest(MOUSTACHE),
       ],
+    },
+  },
+  {
+    id: "day2-breakfast-place",
+    day: 2,
+    time: "9:35 AM",
+    stayMin: 30,
+    title: "Breakfast",
+    subtitle: "Moustache Daman",
+    description: "Breakfast.",
+    coordinates: MOUSTACHE,
+    iconType: "food",
+    transport: "scooter",
+    zoom: 16,
+    actionLabel: "Check out",
+    variantsFor: "day2-breakfast",
+    variants: {
+      cafe: { stayMin: 30, title: "Breakfast at the cafe", subtitle: "Moustache Daman", description: "A quick breakfast at Moustache's cafe, then straight to packing." },
+      jalaram: {
+        stayMin: 60,
+        title: "Jalaram Khaman House",
+        subtitle: "Gujarati breakfast, round two",
+        description: "Khaman, fafda-jalebi and chai again. Ride back by 10:30 for check-out.",
+        coordinates: JALARAM,
+        mapsUrl: maps("Jalaram Khaman House, Nani Daman"),
+      },
+      skip: { stayMin: 10, title: "No breakfast", subtitle: "Moustache Daman", description: "Skipping breakfast. Pack up early; lunch in Moti Daman will be the first meal." },
+      suggest: { stayMin: 45, title: "Your breakfast place", subtitle: "Group suggestion", description: "Breakfast at the place the group suggested: {note}. Back by 10:30 for check-out." },
     },
   },
   {
@@ -590,7 +656,7 @@ export const steps: Step[] = [
     subtitle: "Portuguese colony",
     fixed: "Main Day 2 stop",
     description:
-      "Cross the old Daman Ganga bridge, 250 m from the stay, into the walled town. Walk the fort walls and the tree-lined Portuguese streets, government buildings and old churches inside.",
+      "Cross the old Daman Ganga bridge, 250 m from the stay, into the walled town. Start on the north walls by the river, then the tree-lined Portuguese streets and government buildings inside. The church and lighthouse are next.",
     why: "The best-preserved Portuguese quarter on this coast, open 8 AM to 6 PM. Late morning keeps the walls walk before the heat and leaves time for the church and lighthouse.",
     coordinates: MOTI_FORT,
     iconType: "fort",
@@ -617,7 +683,7 @@ export const steps: Step[] = [
     transport: "scooter",
     legLabel: "Short ride",
     zoom: 16,
-    actionLabel: "Continue",
+    actionLabel: "Go for lunch",
     mapsUrl: maps("Bom Jesus Church, Moti Daman"),
     choices: {
       prompt: "Lunch in Moti Daman?",
@@ -645,6 +711,41 @@ export const steps: Step[] = [
         },
         suggest(BOM_JESUS),
       ],
+    },
+  },
+  {
+    id: "lunch-moti",
+    day: 2,
+    time: "1:15 PM",
+    stayMin: 60,
+    title: "Lunch",
+    subtitle: "Moti Daman",
+    description: "Lunch.",
+    coordinates: BOM_JESUS,
+    iconType: "food",
+    transport: "scooter",
+    zoom: 16,
+    actionLabel: "Go to Pargola Garden",
+    variantsFor: "bom-jesus",
+    variants: {
+      fortalezza: {
+        stayMin: 60,
+        title: "Fortalezza",
+        subtitle: "Inside the fort walls",
+        description: "Sit-down lunch inside the fort: veg and non-veg, continental and Chinese, mocktails. About ₹1,300 for two. Pargola Garden is 300 m from here.",
+        coordinates: FORTALEZZA,
+        mapsUrl: maps("Fortalezza restaurant, Moti Daman"),
+      },
+      backyard: {
+        stayMin: 60,
+        title: "The Backyard Cafe",
+        subtitle: "Dominican Monastery Lane",
+        description: "Cafe-style lunch in the fort area: Italian and Chinese plates. Then a short ride to Pargola Garden.",
+        coordinates: BACKYARD,
+        rating: { stars: 4.4, reviews: "14 reviews" },
+        mapsUrl: maps("The Backyard Cafe, Moti Daman"),
+      },
+      suggest: { stayMin: 60, title: "Your lunch place", subtitle: "Group suggestion", description: "Lunch at the place the group suggested: {note}. Then Pargola Garden." },
     },
   },
   {

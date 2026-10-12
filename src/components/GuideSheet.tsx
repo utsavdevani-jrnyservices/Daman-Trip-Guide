@@ -7,6 +7,7 @@ import type { Rating, Step } from "../types";
 import { fmtDur, fmtKm, fmtTime, TRANSPORT_VERB, type Slot } from "../lib/schedule";
 import type { PlanItem } from "../hooks/useItinerary";
 import { STOP_SVG, VEHICLE_LABEL, VEHICLE_SVG } from "./mapIcons";
+import StayTimer from "./StayTimer";
 
 interface Props {
   step: Step;
@@ -153,19 +154,27 @@ const GuideSheet = forwardRef<HTMLDivElement, Props>(function GuideSheet(
                 </div>
               </div>
 
-              {/* Timing window */}
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                <div className="rounded-xl border px-3 py-2 leading-tight" style={{ borderColor: `${accent}55`, background: `${accent}12` }}>
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">{slot.fixed ? "At" : "Arrive"}</div>
-                  <div className="text-[15px] font-bold text-white">{slot.fixed ? fmtTime(slot.arrive, 1) : `~${fmtTime(slot.arrive)}`}</div>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 leading-tight">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">Time here</div>
-                  <div className="text-[16px] font-bold text-white">{slot.stay > 0 ? `≈${fmtDur(slot.stay)}` : step.duration ?? "–"}</div>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 leading-tight">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">Leave by</div>
-                  <div className="text-[15px] font-bold text-white">{slot.stay > 0 ? `~${fmtTime(slot.leave)}` : "–"}</div>
+              {/* Arrival timer + window */}
+              <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  {slot.stay > 0 ? (
+                    <StayTimer minutes={slot.stay} accent={accent} playKey={step.id} />
+                  ) : (
+                    <div className="leading-tight">
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">Time here</div>
+                      <div className="text-[18px] font-bold text-white">{step.duration ?? "–"}</div>
+                    </div>
+                  )}
+                  <div className="shrink-0 text-right leading-tight">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">{slot.fixed ? "At" : "Arrive"}</div>
+                    <div className="text-[15px] font-bold" style={{ color: accent }}>{slot.fixed ? fmtTime(slot.arrive, 1) : `~${fmtTime(slot.arrive)}`}</div>
+                    {slot.stay > 0 && (
+                      <>
+                        <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">Leave by</div>
+                        <div className="text-[15px] font-bold text-white">~{fmtTime(slot.leave)}</div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               {slot.slack >= 10 && (
