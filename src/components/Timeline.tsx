@@ -8,12 +8,13 @@ interface Props {
   steps: Step[];
   stepIndex: number;
   choices: Record<string, string>;
+  notes: Record<string, string>;
   onClose: () => void;
   onJump: (index: number) => void;
   onReset: () => void;
 }
 
-export default function Timeline({ open, steps, stepIndex, choices, onClose, onJump, onReset }: Props) {
+export default function Timeline({ open, steps, stepIndex, choices, notes, onClose, onJump, onReset }: Props) {
   return (
     <AnimatePresence>
       {open && (
@@ -35,7 +36,7 @@ export default function Timeline({ open, steps, stepIndex, choices, onClose, onJ
             <div className="flex items-center justify-between px-5 pb-3 pt-[max(16px,env(safe-area-inset-top))]">
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">Itinerary</div>
-                <div className="font-display text-[26px] italic text-white">2 days · 1 night · 6 friends</div>
+                <div className="font-display text-[26px] italic text-white">Mumbai → Daman · 2 days</div>
               </div>
               <button
                 onClick={onClose}
@@ -89,7 +90,7 @@ export default function Timeline({ open, steps, stepIndex, choices, onClose, onJ
                                   <span>{s.time}</span>
                                   {chosen && (
                                     <span className="rounded-full bg-white/10 px-1.5 py-0.5 normal-case tracking-normal text-white/70">
-                                      {chosen.emoji} {chosen.label}
+                                      {chosen.emoji} {chosen.freeText && notes[s.id]?.trim() ? notes[s.id].trim() : chosen.label}
                                     </span>
                                   )}
                                 </div>
@@ -117,7 +118,7 @@ export default function Timeline({ open, steps, stepIndex, choices, onClose, onJ
               >
                 <RotateCcw size={15} /> Restart trip
               </button>
-              <p className="mt-4 text-center text-[10px] text-white/30">Map © OpenStreetMap contributors · © CARTO</p>
+              <p className="mt-4 text-center text-[10px] text-white/30">Map © OpenStreetMap contributors · OpenFreeMap</p>
             </div>
           </motion.div>
         </motion.div>

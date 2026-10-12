@@ -82,11 +82,14 @@ export default function App() {
         progress={progress}
         accent={accent}
         choiceId={it.state.choices[it.step.id]}
+        note={it.state.notes[it.step.id] ?? ""}
         choiceMade={it.choiceMade}
         isLast={it.isLast}
+        plan={it.plan}
         onNext={it.next}
         onBack={it.back}
         onChoose={it.choose}
+        onNote={it.setNote}
         onReset={it.reset}
       />
 
@@ -95,6 +98,7 @@ export default function App() {
         steps={it.steps}
         stepIndex={it.state.stepIndex}
         choices={it.state.choices}
+        notes={it.state.notes}
         onClose={() => setTimelineOpen(false)}
         onJump={it.jump}
         onReset={it.reset}
