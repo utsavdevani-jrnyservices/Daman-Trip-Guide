@@ -86,6 +86,8 @@ export default function App() {
         choiceMade={it.choiceMade}
         isLast={it.isLast}
         plan={it.plan}
+        message={it.message}
+        legKm={it.activeLeg?.km}
         onNext={it.next}
         onBack={it.back}
         onChoose={it.choose}

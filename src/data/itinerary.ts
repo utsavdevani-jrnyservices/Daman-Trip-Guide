@@ -1,54 +1,51 @@
-import type { LatLng, Step } from "../types";
+import type { Choice, LatLng, Step } from "../types";
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
  *  ITINERARY DATA
- *  Coordinates are [lat, lng]. Local pins are approximate — update to exact
- *  pins later. Train timings are from the published 12935 / 12936 timetable;
- *  each train step links to the live running status for the day.
+ *  Coordinates are [lat, lng], checked against OpenStreetMap where the place is
+ *  mapped. Restaurants marked "approx." are pinned by locality only — the
+ *  Google Maps link is the reliable way to navigate to them.
+ *  Train timings: published 12935 / 12936 timetable.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-// ── Anchor points ────────────────────────────────────────────────────────────
-export const ANDHERI_STATION: LatLng = [19.1197, 72.8464];
-export const VAPI_STATION: LatLng = [20.3719, 72.9048];
-export const MOUSTACHE_HOSTEL: LatLng = [20.4215, 72.8445];
-export const NEARBY_BREAKFAST: LatLng = [20.4178, 72.8488];
-export const NANI_DAMAN_FORT: LatLng = [20.4188, 72.8392];
-export const MIRASOL_GARDEN: LatLng = [20.4475, 72.8545];
-export const DEVKA_BEACH: LatLng = [20.4505, 72.8338];
-export const NIGHT_MARKET: LatLng = [20.4172, 72.8427];
-export const MOTI_DAMAN: LatLng = [20.3952, 72.8338];
-export const JAMPORE_BEACH: LatLng = [20.3642, 72.8225];
-export const SCOOTER_RETURN: LatLng = [20.4198, 72.8458];
+// ── Places ───────────────────────────────────────────────────────────────────
+export const ANDHERI_STATION: LatLng = [19.1196, 72.8464];
+export const VAPI_STATION: LatLng = [20.3735, 72.9084];
+export const MOUSTACHE: LatLng = [20.415, 72.8335]; // Panch Rasta, opp. SP office, Nani Daman
+export const JALARAM: LatLng = [20.418, 72.835]; // approx. — market area, 6 min walk from the stay
+export const NANI_FORT: LatLng = [20.4134, 72.8322];
+export const DELITE: LatLng = [20.416, 72.833]; // approx. — Seaface Road, Nani Daman
+export const MIRASOL: LatLng = [20.4603, 72.854];
+export const DEVKA: LatLng = [20.4458, 72.833];
+export const JETTY_ROLLS: LatLng = [20.4145, 72.832];
+export const SEAFACE: LatLng = [20.4155, 72.8315];
+export const MOTI_FORT: LatLng = [20.407, 72.8342];
+export const BOM_JESUS: LatLng = [20.4068, 72.8343];
+export const LIGHTHOUSE: LatLng = [20.4096, 72.8307];
+export const FORTALEZZA: LatLng = [20.4059, 72.8353];
+export const BACKYARD: LatLng = [20.404, 72.833]; // approx. — Dominican Monastery Lane
+export const PARGOLA: LatLng = [20.4092, 72.8355];
 
-// Western-line rail waypoints between Andheri and Vapi (rough track geometry).
-const RAIL_NORTH: LatLng[] = [
-  [19.229, 72.857], // Borivali
-  [19.4559, 72.8111], // Virar
-  [19.6967, 72.7644], // Palghar
-  [19.98, 72.74], // Dahanu Road
-  [20.2, 72.83], // Umbergaon
-];
-const RAIL_SOUTH: LatLng[] = [...RAIL_NORTH].reverse();
-
-// Vapi → Nani Daman road waypoints.
-const VAPI_TO_DAMAN: LatLng[] = [
-  [20.38, 72.89],
-  [20.399, 72.872],
-  [20.412, 72.856],
-];
-
-// Crossing the Daman Ganga river via the bridge into Moti Daman.
-const RIVER_CROSSING: LatLng[] = [
-  [20.415, 72.849],
-  [20.411, 72.8475], // bridge north end
-  [20.4055, 72.844], // bridge south end
-  [20.399, 72.838],
-];
+const maps = (q: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 
 const TRAIN_OUT = { label: "Live status · 12935", url: "https://erail.in/train-enquiry/12935" };
 const TRAIN_BACK = { label: "Live status · 12936", url: "https://erail.in/train-enquiry/12936" };
+
+/** The "suggest your own place" option every decision gets. */
+function suggest(at: LatLng): Choice {
+  return {
+    id: "suggest",
+    label: "Suggest a different place",
+    hint: "Type the place name and locality, or paste a Google Maps link",
+    coordinates: at,
+    emoji: "📍",
+    freeText: true,
+    freeTextPlaceholder: "e.g. Hotel Gurukripa, Seaface Road, Nani Daman",
+    noPin: true,
+  };
+}
 
 export const steps: Step[] = [
   // ── DAY 1 · NANI DAMAN ────────────────────────────────────────────────────
@@ -56,30 +53,34 @@ export const steps: Step[] = [
     id: "andheri",
     day: 1,
     time: "6:30 AM",
+    duration: "Departure",
     title: "Andheri Station",
     subtitle: "Meet-up point",
+    fixed: "Reserved tickets",
     warning:
       "Everyone must reach Andheri station before 6:30 AM, no matter what. The train leaves at 6:42 AM and will not wait.",
     description:
-      "Train 12935, Bandra Terminus – Surat Intercity Superfast Express. It arrives at Andheri at 6:40 AM and departs at 6:42 AM. Check the live status on the morning for any delay.",
+      "Train 12935, Bandra Terminus – Surat Intercity Superfast Express. Arrives at Andheri 6:40 AM, departs 6:42 AM. Check the live status in the morning for any delay.",
     coordinates: ANDHERI_STATION,
     iconType: "train",
     zoom: 13,
     actionLabel: "Board the train",
     links: [TRAIN_OUT],
+    mapsUrl: maps("Andheri Railway Station"),
   },
   {
     id: "vapi-arrive",
     day: 1,
     time: "9:02 AM",
+    duration: "15–20 min",
     title: "Vapi Station",
     subtitle: "Get off here",
+    fixed: "Cab to the stay",
     description:
-      "Scheduled arrival at Vapi is 9:02 AM. Walk out of the station and take a cab to Moustache Daman. It is about 30 to 40 minutes by road.",
+      "Scheduled arrival 9:02 AM. Walk out of the station and take a cab to Moustache Daman. 11 km, about 20 to 30 minutes by road. Agree the fare before getting in.",
     coordinates: VAPI_STATION,
     iconType: "train",
     transport: "train",
-    route: RAIL_NORTH,
     legLabel: "2h 20m · 12935 Intercity SF",
     zoom: 14,
     actionLabel: "Take a cab to Moustache",
@@ -89,332 +90,531 @@ export const steps: Step[] = [
     id: "moustache-arrive",
     day: 1,
     time: "9:45 AM",
+    duration: "30 min",
     title: "Moustache Daman",
-    subtitle: "Our stay in Nani Daman",
+    subtitle: "Our stay · Panch Rasta, Nani Daman",
     description:
-      "Check-in is at 12 PM, so there is a 30-minute buffer here to change and freshen up. Then decide how we do breakfast.",
-    coordinates: MOUSTACHE_HOSTEL,
+      "Drop the luggage at reception (check-in is at 12:30 PM) and take 30 minutes to change and freshen up. Then decide how we do breakfast.",
+    why: "Picked for the location: 3 minutes on foot from Nani Daman Fort, 5 from the seaface, and the scooter rental delivers here.",
+    coordinates: MOUSTACHE,
     iconType: "hostel",
     transport: "car",
-    route: VAPI_TO_DAMAN,
-    legLabel: "30–40 min · Cab",
+    legLabel: "20–30 min · Cab",
     zoom: 15,
     actionLabel: "Continue",
+    mapsUrl: maps("Moustache Daman hostel"),
     choices: {
       prompt: "Breakfast plan?",
       options: [
         {
-          id: "nearby",
-          label: "Nearest breakfast place",
-          hint: "Walk there, eat, walk back · about 1 hour",
-          coordinates: NEARBY_BREAKFAST,
+          id: "jalaram",
+          label: "Jalaram Khaman House",
+          hint: "Gujarati farsan breakfast · 6 min walk · about 1 hour including the walk",
+          why: "The local Gujarati breakfast spot: khaman, sev khamani, khandvi, fafda-jalebi and locho. Cheap, fast and 430 m from the stay.",
+          coordinates: JALARAM,
           emoji: "🍽️",
+          recommended: true,
+          mapsUrl: maps("Jalaram Khaman House, Nani Daman"),
         },
         {
           id: "cafe",
           label: "Moustache's own cafe",
-          hint: "About 30 minutes",
-          coordinates: MOUSTACHE_HOSTEL,
+          hint: "Upstairs at the stay · about 30 minutes · reviews call the food basic but fine",
+          coordinates: MOUSTACHE,
           emoji: "☕",
         },
         {
           id: "common",
           label: "Hang out in the common area",
           hint: "Order something if hungry · about 30 minutes",
-          coordinates: MOUSTACHE_HOSTEL,
+          coordinates: MOUSTACHE,
           emoji: "🛋️",
         },
         {
           id: "other",
           label: "Skip breakfast, do something else",
           hint: "Type what you'd rather do",
-          coordinates: MOUSTACHE_HOSTEL,
+          coordinates: MOUSTACHE,
           emoji: "✍️",
           freeText: true,
-          freeTextPlaceholder: "e.g. walk along the jetty, sleep for an hour…",
+          freeTextPlaceholder: "e.g. walk to the jetty, sleep for an hour…",
+          noPin: true,
         },
+        suggest(MOUSTACHE),
       ],
     },
   },
   {
-    // Branches on the breakfast choice above.
     id: "breakfast",
     day: 1,
     time: "10:15 AM",
+    duration: "1 hour",
     title: "Breakfast",
     subtitle: "Moustache Daman",
     description: "Breakfast.",
-    coordinates: MOUSTACHE_HOSTEL,
+    coordinates: MOUSTACHE,
     iconType: "food",
     transport: "walk",
     zoom: 16,
     actionLabel: "Go to Nani Daman Fort",
     variantsFor: "moustache-arrive",
     variants: {
-      nearby: {
-        title: "Breakfast nearby",
-        subtitle: "Nearest place to the stay",
+      jalaram: {
+        title: "Jalaram Khaman House",
+        subtitle: "Gujarati breakfast · 10:15 – 11:15 AM",
         description:
-          "Walk to the nearest breakfast place, eat, and walk back to Moustache. Plan about an hour in total. Back at the stay by around 11:15 AM.",
-        coordinates: NEARBY_BREAKFAST,
+          "Khaman, sev khamani, khandvi, fafda with jalebi, locho and chai. Order at the counter and share plates. Then walk straight to the fort from here, it is 8 minutes away.",
+        coordinates: JALARAM,
         transport: "walk",
-        legLabel: "~10 min walk",
-        tips: ["10:15 – 11:15 AM"],
+        legLabel: "6 min walk",
+        tips: ["Done by 11:15 AM", "Cash is handy"],
+        mapsUrl: maps("Jalaram Khaman House, Nani Daman"),
       },
       cafe: {
         title: "Breakfast at the cafe",
-        subtitle: "Moustache's own cafe",
-        description: "Breakfast at Moustache's cafe. About 30 minutes. Done by around 10:45 AM.",
-        legLabel: "At the stay",
-        tips: ["10:15 – 10:45 AM"],
+        subtitle: "Moustache Daman · 10:15 – 10:45 AM",
+        duration: "30 min",
+        description: "Breakfast at Moustache's cafe upstairs. About 30 minutes, done by 10:45 AM.",
+        tips: ["Done by 10:45 AM"],
       },
       common: {
         title: "Common area",
-        subtitle: "Moustache Daman",
-        description:
-          "Hang out in the common area and order something for breakfast if anyone is hungry. About 30 minutes. Done by around 10:45 AM.",
-        legLabel: "At the stay",
-        tips: ["10:15 – 10:45 AM"],
+        subtitle: "Moustache Daman · 10:15 – 10:45 AM",
+        duration: "30 min",
+        description: "Hang out in the common area and order something for breakfast if anyone is hungry. About 30 minutes, done by 10:45 AM.",
+        tips: ["Done by 10:45 AM"],
       },
       other: {
         title: "Your plan",
-        subtitle: "Instead of breakfast",
-        description: "The group chose to skip breakfast and do this instead: {note}. Plan to be back at Moustache by around 11:15 AM.",
-        legLabel: "At the stay",
-        tips: ["10:15 – 11:15 AM"],
+        subtitle: "Instead of breakfast · 10:15 – 11:15 AM",
+        description: "The group chose to skip breakfast and do this instead: {note}. Be back at Moustache by 11:15 AM.",
+        tips: ["Back by 11:15 AM"],
+      },
+      suggest: {
+        title: "Your breakfast place",
+        subtitle: "Group suggestion · 10:15 – 11:15 AM",
+        description: "Breakfast at the place the group suggested: {note}. Be back at Moustache by 11:15 AM.",
+        tips: ["Back by 11:15 AM"],
       },
     },
   },
   {
     id: "nani-fort",
     day: 1,
-    time: "11:30 AM",
+    time: "11:15 AM",
+    duration: "1 hour",
     title: "Nani Daman Fort",
-    subtitle: "Fort of St. Jerome, next to the stay",
+    subtitle: "Fort of St. Jerome",
+    fixed: "Next to the stay",
     description:
-      "Explore the fort, which is right next to the stay. Before heading out, call the scooter rental and ask them to drop 3 scooters at Moustache while we are at the fort.",
-    coordinates: NANI_DAMAN_FORT,
+      "Walk the ramparts, see the chapel of Our Lady of the Sea with its carved rosewood altar, and the view over the river mouth to Moti Daman. Before heading in, call the scooter rental and ask them to drop 3 scooters at Moustache at 3 PM.",
+    why: "Open 8 AM to 6 PM, free entry, and 300 m from the stay, so it fits before check-in without any travel. Late morning is quieter than the evening crowd.",
+    coordinates: NANI_FORT,
     iconType: "fort",
     transport: "walk",
-    legLabel: "~500 m walk",
+    legLabel: "Short walk",
     zoom: 16,
     actionLabel: "Back for check-in",
-    tips: ["Call scooter rental: 3 scooters to Moustache"],
+    tips: ["Call scooter rental: 3 scooters at Moustache, 3 PM"],
+    mapsUrl: maps("Nani Daman Fort St Jerome"),
   },
   {
     id: "checkin",
     day: 1,
     time: "12:30 PM",
+    duration: "1 hour + lunch",
     title: "Check-in",
-    subtitle: "Moustache Daman · 12:30 – 1:30 PM",
-    description: "Check in, move the bags to the room and take an hour to settle. Then pick where lunch happens.",
-    coordinates: MOUSTACHE_HOSTEL,
+    subtitle: "Moustache Daman",
+    fixed: "Check-in 12:30 PM",
+    description: "Check in, move the bags to the rooms and take an hour to settle. Then lunch, and the scooters arrive at 3 PM.",
+    coordinates: MOUSTACHE,
     iconType: "checkin",
     transport: "walk",
-    legLabel: "~500 m walk",
+    legLabel: "4 min walk",
     zoom: 16,
-    actionLabel: "Go to Mirasol",
+    actionLabel: "Continue",
     choices: {
       prompt: "Lunch plan?",
       options: [
         {
-          id: "local",
-          label: "Nearby local cafe",
-          hint: "5 min walk · Daman thali and seafood",
-          coordinates: [20.4232, 72.8468],
-          emoji: "🍛",
+          id: "delite",
+          label: "Daman Delite · seafood",
+          hint: "Hotel Gurukripa, Seaface Road · 5 min walk · about 1 hour",
+          why: "The best-known seafood kitchen in Nani Daman. Reviewers rate the pomfret Damanese fry, fish pahadi tikka and the seafood platter. Good veg options too.",
+          coordinates: DELITE,
+          emoji: "🐟",
+          recommended: true,
+          rating: { stars: 4.3, reviews: "1,000+ reviews" },
+          mapsUrl: maps("Daman Delite Restaurant, Hotel Gurukripa, Nani Daman"),
         },
         {
-          id: "hostel",
-          label: "Eat at Moustache",
-          hint: "No travel · order at the cafe",
-          coordinates: MOUSTACHE_HOSTEL,
+          id: "cafe",
+          label: "Moustache's own cafe",
+          hint: "No travel · about 45 minutes",
+          coordinates: MOUSTACHE,
           emoji: "🏠",
         },
+        suggest(MOUSTACHE),
       ],
     },
   },
   {
-    id: "mirasol",
+    id: "scooters",
     day: 1,
     time: "3:00 PM",
-    title: "Mirasol Lake Garden",
-    subtitle: "Afternoon",
+    duration: "15 min",
+    title: "Scooters arrive",
+    subtitle: "Moustache Daman",
+    fixed: "24-hour rental",
     description:
-      "An hour or two at Mirasol Lake Garden. Pedal boats, shaded seating and a small restaurant on the island. Ride the scooters there.",
-    coordinates: MIRASOL_GARDEN,
+      "The rental drops 3 scooters at Moustache. Check fuel, helmets and papers, and note the time: they have to be back here by 3 PM tomorrow. Then pick the afternoon.",
+    coordinates: MOUSTACHE,
+    iconType: "scooter",
+    transport: "walk",
+    legLabel: "Short walk",
+    zoom: 16,
+    actionLabel: "Continue",
+    tips: ["Return by 3:00 PM on Day 2", "2 per scooter, helmets on"],
+    choices: {
+      prompt: "Afternoon plan?",
+      options: [
+        {
+          id: "mirasol",
+          label: "Mirasol Lake Garden",
+          hint: "8.5 km · 15 min ride · 1.5 to 2 hours",
+          why: "A man-made lake with two green islands joined by a bridge. Pedal boats (about ₹200 per boat for 20 min), a toy train (₹50) and a restaurant on the island. Entry around ₹100. Best in the mid-afternoon, before the Devka sunset.",
+          coordinates: MIRASOL,
+          emoji: "🚤",
+          recommended: true,
+          rating: { stars: 4.4, reviews: "1,000+ reviews" },
+          mapsUrl: maps("Mirasol Lake Garden, Kadaiya, Daman"),
+        },
+        {
+          id: "devka-early",
+          label: "Straight to Devka Beach",
+          hint: "3.6 km · 10 min ride · longer time on the beach",
+          coordinates: DEVKA,
+          emoji: "🏖️",
+          mapsUrl: maps("Devka Beach, Daman"),
+        },
+        {
+          id: "rest",
+          label: "Rest at the hostel until 5 PM",
+          hint: "No travel · leave for Devka at 5 PM",
+          coordinates: MOUSTACHE,
+          emoji: "😴",
+        },
+        suggest(MOUSTACHE),
+      ],
+    },
+  },
+  {
+    id: "afternoon",
+    day: 1,
+    time: "3:30 PM",
+    duration: "1.5–2 hours",
+    title: "Afternoon",
+    subtitle: "Nani Daman",
+    description: "Afternoon.",
+    coordinates: MOUSTACHE,
     iconType: "garden",
     transport: "scooter",
-    route: [
-      [20.426, 72.842],
-      [20.438, 72.85],
-    ],
-    legLabel: "15 min · Scooter",
     zoom: 15,
     actionLabel: "Go to Devka Beach",
+    variantsFor: "scooters",
+    variants: {
+      mirasol: {
+        title: "Mirasol Lake Garden",
+        subtitle: "Kadaiya · 3:30 – 5:15 PM",
+        description:
+          "Boating on the lake, the toy train, and a cold drink at the island restaurant. Leave by 5:15 PM for Devka, it is a 10-minute ride and the sun sets around 6.",
+        coordinates: MIRASOL,
+        legLabel: "15 min · Scooter",
+        rating: { stars: 4.4, reviews: "1,000+ reviews" },
+        mapsUrl: maps("Mirasol Lake Garden, Kadaiya, Daman"),
+        tips: ["Leave by 5:15 PM", "Boat ~₹200 / 20 min", "Toy train ₹50"],
+      },
+      "devka-early": {
+        title: "Devka Beach, early",
+        subtitle: "3:30 PM onwards",
+        description:
+          "A long afternoon on Devka Beach. Black sand, rocks and tide pools, camel rides, and stalls along the shore. The water pulls back far in the evening. Not a swimming beach.",
+        coordinates: DEVKA,
+        iconType: "beach",
+        legLabel: "10 min · Scooter",
+        mapsUrl: maps("Devka Beach, Daman"),
+      },
+      rest: {
+        title: "Rest at Moustache",
+        subtitle: "3:30 – 5:00 PM",
+        duration: "1.5 hours",
+        description: "Downtime at the stay. Leave for Devka at 5 PM on the scooters.",
+        iconType: "hostel",
+        tips: ["Leave at 5:00 PM"],
+      },
+      suggest: {
+        title: "Your afternoon place",
+        subtitle: "Group suggestion · 3:30 – 5:15 PM",
+        description: "The afternoon at the place the group suggested: {note}. Be at Devka Beach by 5:30 PM for the sunset.",
+        tips: ["At Devka by 5:30 PM"],
+      },
+    },
   },
   {
     id: "devka",
     day: 1,
     time: "5:30 PM",
+    duration: "1.5 hours",
     title: "Devka Beach",
     subtitle: "Sunset",
+    fixed: "Sunset ~6 PM",
     description:
-      "Devka Beach for the sunset. Sunset is around 6 PM. Black sand, rocky pools and a long promenade. Decide on dinner here.",
-    coordinates: DEVKA_BEACH,
+      "Sunset over the rocks around 6 PM. Black sand, tide pools, camel and pony rides, and stalls along the shore. Not for swimming. Stay till it gets dark, then ride back to the fort area for dinner.",
+    why: "The one place in Daman where the sunset is the event: the rocky shoreline turns red and the sea pulls back a long way. Best between 5:30 and 7 PM.",
+    coordinates: DEVKA,
     iconType: "beach",
     transport: "scooter",
-    route: [[20.452, 72.844]],
     legLabel: "10 min · Scooter",
     zoom: 15,
-    actionLabel: "Go to the night market",
-    choices: {
-      prompt: "Dinner plan?",
-      options: [
-        {
-          id: "seaview",
-          label: "Sea-view restaurant",
-          hint: "Sit-down · seafood on the promenade",
-          coordinates: [20.4538, 72.8325],
-          emoji: "🦐",
-        },
-        {
-          id: "street",
-          label: "Street food along the beach",
-          hint: "Bhajiya, chaat, ice gola",
-          coordinates: [20.4488, 72.8352],
-          emoji: "🌮",
-        },
-      ],
-    },
+    actionLabel: "Dinner at Jetty Rolls",
+    mapsUrl: maps("Devka Beach, Daman"),
+  },
+  {
+    id: "jetty-rolls",
+    day: 1,
+    time: "8:00 PM",
+    duration: "1 hour",
+    title: "Daman Jetty Rolls",
+    subtitle: "Street food behind the fort",
+    fixed: "The famous one",
+    description:
+      "Daman's own street food: the jetty roll, a local take on the kathi roll. Separate veg and non-veg stalls. Chicken and egg rolls, paneer roll for vegetarians, plus pav bhaji and chaat from the stalls around.",
+    why: "The most reviewed food spot in Nani Daman, affordable, and 200 m from the night market. Weekends get crowded, so 8 PM is the right time.",
+    rating: { stars: 4.3, reviews: "1,900+ reviews" },
+    coordinates: JETTY_ROLLS,
+    iconType: "food",
+    transport: "scooter",
+    legLabel: "10 min · Scooter",
+    zoom: 16,
+    actionLabel: "Night market walk",
+    mapsUrl: maps("Daman Jetty Rolls, Nani Daman"),
   },
   {
     id: "night-market",
     day: 1,
-    time: "8:30 PM",
-    title: "Night Market",
-    subtitle: "Nani Daman bazaar",
+    time: "9:00 PM",
+    duration: "1–1.5 hours",
+    title: "Night Market & Seaface",
+    subtitle: "Nani Daman seaface road",
+    fixed: "Walk back to the stay",
     description:
-      "Walk through the Nani Daman night market, then head back to Moustache to hang out in the common area, play games and sleep.",
-    coordinates: NIGHT_MARKET,
+      "Walk off dinner through the night market stalls and along the lit seaface road, then walk back to Moustache. It is 300 m from the stay. Pick how the night ends.",
+    coordinates: SEAFACE,
     iconType: "market",
-    transport: "scooter",
-    route: [
-      [20.44, 72.84],
-      [20.428, 72.8415],
-    ],
-    legLabel: "15 min · Scooter",
+    transport: "walk",
+    legLabel: "3 min walk",
     zoom: 16,
     actionLabel: "End of Day 1",
-  },
-
-  // ── DAY 2 · MOTI DAMAN ────────────────────────────────────────────────────
-  {
-    id: "day2-start",
-    day: 2,
-    time: "9:00 AM",
-    title: "Breakfast & Scooters",
-    subtitle: "Moustache Daman",
-    description:
-      "Breakfast at the stay, then take the 3 scooters out for the day. The rental has a strict 24-hour limit, so they must be back before we leave for the evening train.",
-    coordinates: MOUSTACHE_HOSTEL,
-    iconType: "scooter",
-    transport: "walk",
-    legLabel: "Short walk",
-    zoom: 16,
-    actionLabel: "Ride to Moti Daman",
-    tips: ["Return scooters by 3:30 PM", "2 per scooter, helmets on"],
-  },
-  {
-    id: "moti-daman",
-    day: 2,
-    time: "10:30 AM",
-    title: "Moti Daman",
-    subtitle: "Portuguese colony",
-    description:
-      "Cross the river into Moti Daman. Moti Daman Fort, Bom Jesus Church and the lighthouse are all within a short walk of each other. Quiet area, good for photos. Decide on lunch here.",
-    coordinates: MOTI_DAMAN,
-    iconType: "church",
-    transport: "scooter",
-    route: RIVER_CROSSING,
-    legLabel: "15 min · Scooter, over the bridge",
-    zoom: 15,
-    actionLabel: "Go to Jampore Beach",
+    mapsUrl: maps("Nani Daman Sea Face Road"),
     choices: {
-      prompt: "Lunch plan?",
+      prompt: "After the walk?",
       options: [
         {
-          id: "goan",
-          label: "Goan / seafood",
-          hint: "Fish thali, prawn curry",
-          coordinates: [20.3968, 72.836],
-          emoji: "🐟",
+          id: "games",
+          label: "Games in the common area",
+          hint: "Board games and cards at Moustache · lights out by midnight",
+          coordinates: MOUSTACHE,
+          emoji: "🎲",
+          recommended: true,
+          why: "Day 2 starts at 9 and check-out is at 11, so a late night costs the morning.",
+          noPin: true,
         },
+        { id: "sleep", label: "Call it a night", hint: "Straight to bed", coordinates: MOUSTACHE, emoji: "🌙", noPin: true },
         {
-          id: "veg",
-          label: "Pure veg / cafe",
-          hint: "Lighter food, AC",
-          coordinates: [20.3935, 72.8372],
-          emoji: "🥗",
+          id: "other",
+          label: "Something else",
+          hint: "Type the plan",
+          coordinates: MOUSTACHE,
+          emoji: "✍️",
+          freeText: true,
+          freeTextPlaceholder: "e.g. music on the terrace",
+          noPin: true,
         },
       ],
     },
   },
+
+  // ── DAY 2 · MOTI DAMAN ────────────────────────────────────────────────────
   {
-    id: "jampore",
+    id: "day2-breakfast",
     day: 2,
-    time: "1:30 PM",
-    title: "Jampore Beach",
-    subtitle: "Afternoon",
-    description: "A slow afternoon at Jampore Beach under the trees. Leave by 3 PM to return the scooters on time.",
-    coordinates: JAMPORE_BEACH,
-    iconType: "beach",
+    time: "9:30 AM",
+    duration: "45 min",
+    title: "Day 2 breakfast",
+    subtitle: "Moustache Daman",
+    description: "Breakfast before check-out. Bags have to be out of the rooms by 11 AM, so keep this one short.",
+    coordinates: MOUSTACHE,
+    iconType: "food",
+    transport: "walk",
+    legLabel: "Short walk",
+    zoom: 16,
+    actionLabel: "Check out",
+    choices: {
+      prompt: "Breakfast plan?",
+      options: [
+        {
+          id: "cafe",
+          label: "Moustache's own cafe",
+          hint: "No travel · 30 minutes · packs well before check-out",
+          why: "Check-out is at 11. Eating at the stay keeps the morning simple.",
+          coordinates: MOUSTACHE,
+          emoji: "☕",
+          recommended: true,
+        },
+        {
+          id: "jalaram",
+          label: "Jalaram Khaman House again",
+          hint: "6 min walk · about 1 hour including the walk",
+          coordinates: JALARAM,
+          emoji: "🍽️",
+          mapsUrl: maps("Jalaram Khaman House, Nani Daman"),
+        },
+        { id: "skip", label: "Skip breakfast", hint: "Early lunch in Moti Daman instead", coordinates: MOUSTACHE, emoji: "⏭️", noPin: true },
+        suggest(MOUSTACHE),
+      ],
+    },
+  },
+  {
+    id: "checkout",
+    day: 2,
+    time: "10:30 AM",
+    duration: "30 min",
+    title: "Check-out",
+    subtitle: "Moustache Daman",
+    fixed: "Check-out by 11 AM",
+    description: "Pack up, check out and leave the bags at reception. Scooters out by 10:45 for the ride over the bridge to Moti Daman.",
+    coordinates: MOUSTACHE,
+    iconType: "checkin",
+    transport: "walk",
+    legLabel: "Short walk",
+    zoom: 16,
+    actionLabel: "Ride to Moti Daman",
+    tips: ["Bags at reception", "Scooters back here by 3 PM"],
+  },
+  {
+    id: "moti-fort",
+    day: 2,
+    time: "11:00 AM",
+    duration: "1.5 hours",
+    title: "Moti Daman Fort",
+    subtitle: "Portuguese colony",
+    fixed: "Main Day 2 stop",
+    description:
+      "Cross the Daman Ganga bridge into the walled town. Walk the fort walls and the tree-lined Portuguese streets, government buildings and old churches inside.",
+    why: "The best-preserved Portuguese quarter on this coast, open 8 AM to 6 PM. Late morning keeps the walls walk before the heat and leaves time for the church and lighthouse.",
+    coordinates: MOTI_FORT,
+    iconType: "fort",
     transport: "scooter",
-    route: [
-      [20.388, 72.83],
-      [20.376, 72.825],
-    ],
-    legLabel: "10 min · Scooter",
+    legLabel: "10 min · Scooter, over the bridge",
     zoom: 15,
+    actionLabel: "Church & lighthouse",
+    mapsUrl: maps("Moti Daman Fort"),
+  },
+  {
+    id: "bom-jesus",
+    day: 2,
+    time: "12:30 PM",
+    duration: "45 min",
+    title: "Bom Jesus Church & Lighthouse",
+    subtitle: "Inside the fort",
+    fixed: "Sightseeing",
+    description:
+      "The 16th-century Bom Jesus Church with its carved wooden altar, then the old lighthouse at the river mouth, reached by the fort-wall stairs. 45 minutes for both, then lunch.",
+    why: "Church is open 7 AM to 6 PM, lighthouse 9 to 6. The lighthouse walk along the wall gives the best view back across the river to Nani Daman.",
+    coordinates: BOM_JESUS,
+    iconType: "church",
+    transport: "walk",
+    legLabel: "Short walk",
+    zoom: 16,
+    actionLabel: "Continue",
+    mapsUrl: maps("Bom Jesus Church, Moti Daman"),
+    choices: {
+      prompt: "Lunch in Moti Daman?",
+      options: [
+        {
+          id: "fortalezza",
+          label: "Fortalezza · inside the fort",
+          hint: "Veg & non-veg, continental and Chinese · 12 PM onwards · about ₹1,300 for two",
+          why: "The only sit-down restaurant inside the fort walls, 300 m from Pargola Garden, so no riding around in the afternoon heat. Few online reviews yet.",
+          coordinates: FORTALEZZA,
+          emoji: "🍽️",
+          recommended: true,
+          mapsUrl: maps("Fortalezza restaurant, Moti Daman"),
+        },
+        {
+          id: "backyard",
+          label: "The Backyard Cafe",
+          hint: "Dominican Monastery Lane, fort area · cafe-style Italian and Chinese",
+          coordinates: BACKYARD,
+          emoji: "🍕",
+          rating: { stars: 4.4, reviews: "14 reviews" },
+          mapsUrl: maps("The Backyard Cafe, Moti Daman"),
+        },
+        suggest(BOM_JESUS),
+      ],
+    },
+  },
+  {
+    id: "pargola",
+    day: 2,
+    time: "2:30 PM",
+    duration: "1 hour",
+    title: "Pargola Garden",
+    subtitle: "Moti Daman · with the Jetty Garden",
+    fixed: "Shade till 3:30 PM",
+    description:
+      "Escape the afternoon sun. A small Portuguese-era garden with old trees and seating, and the Jetty Garden next door has shaded lawns facing the river. Leave at 3:30 PM sharp.",
+    why: "Replaces the Jampore Beach plan: shade, no sun, and 3 km from Moustache so the scooters make it back by 3 PM with margin for the bags and the cab.",
+    coordinates: PARGOLA,
+    iconType: "garden",
+    transport: "walk",
+    legLabel: "Short walk",
+    zoom: 16,
     actionLabel: "Wrap up",
-    tips: ["Leave by 3:00 PM"],
+    tips: ["Leave at 3:30 PM"],
+    mapsUrl: maps("Pargola Garden, Moti Daman"),
   },
   {
     id: "wrap-up",
     day: 2,
-    time: "3:30 PM",
+    time: "3:45 PM",
+    duration: "30 min",
     title: "Wrap Up",
-    subtitle: "Back in Nani Daman",
-    description: "Return the 3 scooters, collect the bags from Moustache and take a cab to Vapi station.",
-    coordinates: SCOOTER_RETURN,
+    subtitle: "Moustache Daman",
+    fixed: "Scooter return + cab",
+    description: "Return the 3 scooters at Moustache, collect the bags from reception and take a cab to Vapi station. Leave Daman by 4:15 PM.",
+    coordinates: MOUSTACHE,
     iconType: "flag",
     transport: "scooter",
-    route: [
-      [20.376, 72.825],
-      [20.388, 72.83],
-      [20.399, 72.838],
-      [20.4055, 72.844],
-      [20.411, 72.8475],
-      [20.415, 72.849],
-    ],
-    legLabel: "25 min · Scooter",
+    legLabel: "10 min · Scooter",
     zoom: 16,
     actionLabel: "Cab to Vapi Station",
-    tips: ["Fuel top-up before return"],
+    tips: ["Fuel top-up before return", "Leave by 4:15 PM"],
   },
   {
     id: "vapi-depart",
     day: 2,
     time: "5:00 PM",
+    duration: "Train 5:40 PM",
     title: "Vapi Station",
     subtitle: "Return train",
+    fixed: "Reserved tickets",
     description:
-      "Train 12936, Surat – Bandra Terminus Intercity Superfast Express. It departs Vapi at 5:40 PM and reaches Andheri at 8:08 PM. Be at the station by 5:00 PM and check the live status for delays.",
+      "Train 12936, Surat – Bandra Terminus Intercity Superfast Express. Departs Vapi 5:40 PM, reaches Andheri 8:08 PM. Be at the station by 5:00 PM and check the live status for delays.",
     coordinates: VAPI_STATION,
     iconType: "train",
     transport: "car",
-    route: [...VAPI_TO_DAMAN].reverse(),
-    legLabel: "30–40 min · Cab",
+    legLabel: "25–35 min · Cab",
     zoom: 14,
     actionLabel: "Board the train",
     links: [TRAIN_BACK],
@@ -423,13 +623,13 @@ export const steps: Step[] = [
     id: "home",
     day: 2,
     time: "8:08 PM",
+    duration: "Arrival",
     title: "Andheri Station",
     subtitle: "Trip complete",
-    description: "Scheduled arrival at Andheri is 8:08 PM. Here is the plan the group picked.",
+    description: "Scheduled arrival at Andheri 8:08 PM. Here is the itinerary the group picked. Copy it or send it to the group on WhatsApp.",
     coordinates: ANDHERI_STATION,
     iconType: "home",
     transport: "train",
-    route: RAIL_SOUTH,
     legLabel: "2h 30m · 12936 Intercity SF",
     zoom: 13,
     actionLabel: "Start over",

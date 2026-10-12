@@ -17,19 +17,32 @@ export type IconType =
   | "flag"
   | "home";
 
+export interface Rating {
+  stars: number;
+  /** e.g. "1,000+ reviews" */
+  reviews: string;
+}
+
 export interface Choice {
   id: string;
   label: string;
+  /** One line under the label: what, how far, how long. */
   hint?: string;
+  /** Short reason this is the recommended pick (shown only on the recommended option). */
+  why?: string;
   coordinates: LatLng;
   emoji: string;
-  /** When true, the group has to type what they want to do before moving on. */
+  recommended?: boolean;
+  rating?: Rating;
+  mapsUrl?: string;
+  /** The group must type something before moving on. */
   freeText?: boolean;
   freeTextPlaceholder?: string;
+  /** Hide the choice pin on the map (e.g. a typed suggestion with no coordinates). */
+  noPin?: boolean;
 }
 
 export interface Decision {
-  /** Shown as the question above the options, e.g. "Breakfast plan?" */
   prompt: string;
   options: Choice[];
 }
@@ -42,37 +55,32 @@ export interface Link {
 export interface Step {
   id: string;
   day: 1 | 2;
-  /** Display time, e.g. "6:30 AM" */
+  /** Best time to be here, e.g. "6:30 AM". */
   time: string;
+  /** How long we spend here, e.g. "45 min". */
+  duration?: string;
   title: string;
-  /** Short line under the title, e.g. "Andheri Station" */
   subtitle: string;
   description: string;
+  /** Why the app recommends this stop (research, best time, what to do). */
+  why?: string;
+  rating?: Rating;
+  mapsUrl?: string;
+  /** Set when the step cannot be changed; the text says why (e.g. "Reserved tickets"). */
+  fixed?: string;
   coordinates: LatLng;
   iconType: IconType;
   /** How the group gets *to* this step from the previous one. */
   transport?: Transport;
-  /** Intermediate waypoints between the previous point and this one (optional). */
-  route?: LatLng[];
-  /** Label for the leg, e.g. "2h 20m · 12935 Intercity" */
+  /** Label for the leg, e.g. "2h 20m · 12935 Intercity". Distance is added automatically. */
   legLabel?: string;
-  /** Target zoom when the camera settles on this step. */
   zoom?: number;
-  /** Primary action button text that advances to the next step. */
   actionLabel: string;
-  /** Optional decision the group must make before moving on. */
   choices?: Decision;
-  /** Short practical notes shown as chips. */
   tips?: string[];
-  /** A highlighted warning shown above the description. */
   warning?: string;
-  /** External links, e.g. live train status. */
   links?: Link[];
-  /**
-   * Branching: this step changes depending on the option chosen at `variantsFor`
-   * (a step id). The matching entry in `variants` is merged over the base step.
-   * `{note}` inside a variant description is replaced with what the group typed.
-   */
+  /** Branching: this step changes depending on the option chosen at `variantsFor` (a step id). */
   variantsFor?: string;
   variants?: Record<string, Partial<Omit<Step, "id" | "variants" | "variantsFor">>>;
 }

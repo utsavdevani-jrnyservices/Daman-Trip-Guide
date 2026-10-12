@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer } from "react";
-import { steps as baseSteps } from "../data/itinerary";
+import { DAY_META, steps as baseSteps } from "../data/itinerary";
+import { routeBetween } from "../lib/routes";
 import type { Choice, LatLng, Step } from "../types";
 
 export type Phase = "idle" | "traveling";
@@ -11,12 +12,12 @@ export interface ItineraryState {
   /** stepId -> free text typed for a free-text option */
   notes: Record<string, string>;
   phase: Phase;
-  /** Monotonic counter so the route layer can re-run an animation for the same leg. */
+  /** Monotonic counter so the map re-runs the camera/animation for a step. */
   journeyKey: number;
 }
 
 type Action =
-  | { type: "NEXT" }
+  | { type: "NEXT"; travel: boolean }
   | { type: "BACK" }
   | { type: "JUMP"; index: number }
   | { type: "CHOOSE"; stepId: string; choiceId: string }
@@ -24,7 +25,7 @@ type Action =
   | { type: "ARRIVED" }
   | { type: "RESET" };
 
-const STORAGE_KEY = "daman-trip-guide:v2";
+const STORAGE_KEY = "daman-trip-guide:v3";
 
 function load(): Partial<Pick<ItineraryState, "stepIndex" | "choices" | "notes">> {
   try {
@@ -38,21 +39,12 @@ function load(): Partial<Pick<ItineraryState, "stepIndex" | "choices" | "notes">
   }
 }
 
-const initialState: ItineraryState = {
-  stepIndex: 0,
-  choices: {},
-  notes: {},
-  phase: "idle",
-  journeyKey: 0,
-  ...load(),
-};
+const initialState: ItineraryState = { stepIndex: 0, choices: {}, notes: {}, phase: "idle", journeyKey: 0, ...load() };
 
-/** The option picked at a decision step, if any. */
 export function chosenOption(step: Step, choices: Record<string, string>): Choice | undefined {
   return step.choices?.options.find((o) => o.id === choices[step.id]);
 }
 
-/** A decision counts as made when an option is picked and, for free-text options, text was typed. */
 export function decisionComplete(step: Step, choices: Record<string, string>, notes: Record<string, string>): boolean {
   if (!step.choices) return true;
   const opt = chosenOption(step, choices);
@@ -73,9 +65,16 @@ export function resolveStep(step: Step, choices: Record<string, string>, notes: 
   return merged;
 }
 
-/** Where a step "ends" on the map: the chosen option's pin if a decision was made, else the step itself. */
+/** Where a step "ends" on the map: the chosen option's pin if it has one, else the step itself. */
 export function resolvedPosition(step: Step, choices: Record<string, string>): LatLng {
-  return chosenOption(step, choices)?.coordinates ?? step.coordinates;
+  const opt = chosenOption(step, choices);
+  return opt && !opt.noPin ? opt.coordinates : step.coordinates;
+}
+
+/** The polyline that arrives at steps[i]. */
+export function legFor(steps: Step[], i: number, choices: Record<string, string>) {
+  const from = resolvedPosition(steps[i - 1], choices);
+  return routeBetween(from, steps[i].coordinates);
 }
 
 function reducer(state: ItineraryState, action: Action): ItineraryState {
@@ -85,7 +84,7 @@ function reducer(state: ItineraryState, action: Action): ItineraryState {
       const current = baseSteps[state.stepIndex];
       if (!decisionComplete(current, state.choices, state.notes)) return state;
       if (state.stepIndex >= baseSteps.length - 1) return state;
-      return { ...state, stepIndex: state.stepIndex + 1, phase: "traveling", journeyKey: state.journeyKey + 1 };
+      return { ...state, stepIndex: state.stepIndex + 1, phase: action.travel ? "traveling" : "idle", journeyKey: state.journeyKey + 1 };
     }
     case "BACK": {
       if (state.phase === "traveling" || state.stepIndex === 0) return state;
@@ -93,8 +92,7 @@ function reducer(state: ItineraryState, action: Action): ItineraryState {
     }
     case "JUMP": {
       if (state.phase === "traveling") return state;
-      const index = Math.max(0, Math.min(baseSteps.length - 1, action.index));
-      return { ...state, stepIndex: index, phase: "idle" };
+      return { ...state, stepIndex: Math.max(0, Math.min(baseSteps.length - 1, action.index)), phase: "idle" };
     }
     case "CHOOSE":
       return { ...state, choices: { ...state.choices, [action.stepId]: action.choiceId } };
@@ -117,33 +115,55 @@ export interface PlanItem {
   note?: string;
 }
 
+/** WhatsApp-formatted itinerary built from every step and the group's picks. */
+export function buildWhatsAppMessage(steps: Step[], choices: Record<string, string>, notes: Record<string, string>): string {
+  const lines: string[] = ["*Daman trip – our itinerary* 🗓️", ""];
+  let day: 1 | 2 | 0 = 0;
+  for (const s of steps) {
+    if (s.day !== day) {
+      day = s.day;
+      if (day === 2) lines.push("");
+      lines.push(`*${DAY_META[day].label} · ${DAY_META[day].name}*`);
+    }
+    const opt = chosenOption(s, choices);
+    const note = opt?.freeText ? (notes[s.id] ?? "").trim() : "";
+    lines.push(`• ${s.time} – ${s.title}`);
+    if (opt && s.choices) {
+      const label = s.choices.prompt.replace(/\s*plan\?$/i, "").replace(/\?$/, "");
+      const pick = note ? `${opt.id === "suggest" ? "📍 " : ""}${note}` : opt.label;
+      lines.push(`   ↳ ${label}: ${pick}`);
+    }
+  }
+  lines.push("", "Train out: 12935, Andheri 6:42 AM. Train back: 12936, Vapi 5:40 PM.", "_Made with the Daman Trip Guide_");
+  return lines.join("\n");
+}
+
 export function useItinerary() {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
     try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ stepIndex: state.stepIndex, choices: state.choices, notes: state.notes }),
-      );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ stepIndex: state.stepIndex, choices: state.choices, notes: state.notes }));
     } catch {
-      /* storage unavailable (private mode etc.) — fine */
+      /* storage unavailable — fine */
     }
   }, [state.stepIndex, state.choices, state.notes]);
 
-  // Every step, resolved against the decisions made so far.
-  const steps = useMemo(
-    () => baseSteps.map((s) => resolveStep(s, state.choices, state.notes)),
-    [state.choices, state.notes],
-  );
-
+  const steps = useMemo(() => baseSteps.map((s) => resolveStep(s, state.choices, state.notes)), [state.choices, state.notes]);
   const step = steps[state.stepIndex];
   const prevStep = state.stepIndex > 0 ? steps[state.stepIndex - 1] : null;
-
   const choiceMade = decisionComplete(step, state.choices, state.notes);
   const isLast = state.stepIndex === steps.length - 1;
 
-  const next = useCallback(() => dispatch({ type: "NEXT" }), []);
+  /** Full polyline for the leg that arrives at `step`, with its distance. */
+  const activeLeg = useMemo(() => (state.stepIndex > 0 ? legFor(steps, state.stepIndex, state.choices) : null), [steps, state.stepIndex, state.choices]);
+
+  const next = useCallback(() => {
+    // Skip the travel animation when the next stop is where we already are.
+    const i = state.stepIndex + 1;
+    const travel = i < steps.length && legFor(steps, i, state.choices).km > 0.05;
+    dispatch({ type: "NEXT", travel });
+  }, [state.stepIndex, state.choices, steps]);
   const back = useCallback(() => dispatch({ type: "BACK" }), []);
   const jump = useCallback((index: number) => dispatch({ type: "JUMP", index }), []);
   const choose = useCallback((stepId: string, choiceId: string) => dispatch({ type: "CHOOSE", stepId, choiceId }), []);
@@ -151,14 +171,6 @@ export function useItinerary() {
   const arrived = useCallback(() => dispatch({ type: "ARRIVED" }), []);
   const reset = useCallback(() => dispatch({ type: "RESET" }), []);
 
-  /** Full polyline for the leg that arrives at `step`. */
-  const activeLeg = useMemo<LatLng[] | null>(() => {
-    if (!prevStep) return null;
-    const from = resolvedPosition(prevStep, state.choices);
-    return [from, ...(step.route ?? []), step.coordinates];
-  }, [prevStep, step, state.choices]);
-
-  /** Every decision the group has made, in trip order — the final summary. */
   const plan = useMemo<PlanItem[]>(
     () =>
       steps
@@ -171,5 +183,7 @@ export function useItinerary() {
     [steps, state.choices, state.notes],
   );
 
-  return { state, step, prevStep, steps, choiceMade, isLast, activeLeg, plan, next, back, jump, choose, setNote, arrived, reset };
+  const message = useMemo(() => buildWhatsAppMessage(steps, state.choices, state.notes), [steps, state.choices, state.notes]);
+
+  return { state, step, prevStep, steps, choiceMade, isLast, activeLeg, plan, message, next, back, jump, choose, setNote, arrived, reset };
 }

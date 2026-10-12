@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import type { LatLng, Step, Transport } from "../types";
-import { resolvedPosition } from "../hooks/useItinerary";
+import { legFor, resolvedPosition } from "../hooks/useItinerary";
 import { easeInOutCubic, partialPath, pointAlong, totalLength } from "../lib/geo";
 import { applyInkTheme, firstSymbolLayer, STYLE_URL } from "../lib/mapTheme";
 import { choiceElement, stopElement, vehicleElement } from "./mapIcons";
@@ -17,7 +17,7 @@ export interface MapViewProps {
   phase: "idle" | "traveling";
   journeyKey: number;
   choices: Record<string, string>;
-  activeLeg: LatLng[] | null;
+  activeLeg: { points: LatLng[]; km: number } | null;
   accent: string;
   /** Current measured height of the bottom sheet (px). */
   sheetHeight: number;
@@ -52,10 +52,6 @@ function lineFeature(points: LatLng[], color: string): GeoJSON.Feature<GeoJSON.L
   };
 }
 
-function legFor(steps: Step[], i: number, choices: Record<string, string>): LatLng[] {
-  const from = resolvedPosition(steps[i - 1], choices);
-  return [from, ...(steps[i].route ?? []), steps[i].coordinates];
-}
 
 function paddingFor(sheetHeight: number): maplibregl.PaddingOptions {
   return { top: TOP_INSET + 16, bottom: sheetHeight + 24, left: 36, right: 36 };
@@ -223,7 +219,7 @@ export default function MapView(props: MapViewProps) {
   const completed = useMemo(() => {
     const last = phase === "traveling" ? stepIndex - 1 : stepIndex;
     const features: GeoJSON.Feature<GeoJSON.LineString>[] = [];
-    for (let i = 1; i <= last; i++) features.push(lineFeature(legFor(steps, i, choices), DAY_ACCENT[steps[i].day]));
+    for (let i = 1; i <= last; i++) features.push(lineFeature(legFor(steps, i, choices).points, DAY_ACCENT[steps[i].day]));
     return { type: "FeatureCollection", features } as GeoJSON.FeatureCollection;
   }, [steps, stepIndex, phase, choices]);
 
@@ -257,7 +253,7 @@ export default function MapView(props: MapViewProps) {
     steps.forEach((s, i) => {
       if (i > stepIndex || !s.choices) return;
       const chosen = s.choices.options.find((o) => o.id === choices[s.id]);
-      if (!chosen) return;
+      if (!chosen || chosen.noPin) return;
       const m = new maplibregl.Marker({ element: choiceElement(chosen.emoji, DAY_ACCENT[s.day]), anchor: "bottom" })
         .setLngLat(toLngLat(chosen.coordinates))
         .addTo(map);
@@ -293,20 +289,21 @@ export default function MapView(props: MapViewProps) {
         curve: 1.3,
       });
 
-    if (phase === "traveling" && activeLeg && activeLeg.length >= 2) {
+    const leg = activeLeg?.points;
+    if (phase === "traveling" && leg && leg.length >= 2) {
       const pad = paddingFor(sheetSizes.current.traveling);
-      const cam = cameraForPoints(map, activeLeg, pad, 16);
+      const cam = cameraForPoints(map, leg, pad, 16);
       map.flyTo({ ...cam, pitch: 0, bearing: 0, padding: pad, duration: 1150, essential: true, curve: 1.2 });
 
-      active?.setData(lineFeature([activeLeg[0]], accent));
+      active?.setData(lineFeature([leg[0]], accent));
       vehicleRef.current?.remove();
       const vehicle = new maplibregl.Marker({ element: vehicleElement(step.transport ?? "walk", accent), anchor: "center" })
-        .setLngLat(toLngLat(activeLeg[0]))
+        .setLngLat(toLngLat(leg[0]))
         .addTo(map);
       vehicleRef.current = vehicle;
       const core = vehicle.getElement().querySelector<HTMLElement>(".vehicle-core");
 
-      const metres = totalLength(activeLeg);
+      const metres = totalLength(leg);
       const duration = legDuration(step.transport, metres);
 
       later(() => {
@@ -315,8 +312,8 @@ export default function MapView(props: MapViewProps) {
           if (cancelled) return;
           const t = Math.min(1, (now - start) / duration);
           const e = easeInOutCubic(t);
-          active?.setData(lineFeature(partialPath(activeLeg, e), accent));
-          const { point, heading } = pointAlong(activeLeg, e);
+          active?.setData(lineFeature(partialPath(leg, e), accent));
+          const { point, heading } = pointAlong(leg, e);
           vehicle.setLngLat(toLngLat(point));
           if (core) core.style.transform = heading < 0 ? "scaleX(-1)" : "scaleX(1)";
           onProgress(e);
@@ -359,7 +356,7 @@ export default function MapView(props: MapViewProps) {
     for (let i = 0; i <= stepIndex; i++) {
       if (steps[i].day !== step.day) continue;
       pts.push(steps[i].coordinates, resolvedPosition(steps[i], choices));
-      if (i > 0) pts.push(...(steps[i].route ?? []));
+      if (i > 0) pts.push(...legFor(steps, i, choices).points);
     }
     if (pts.length === 0) return;
     const pad = paddingFor(sheetSizes.current[latest.current.phase]);
