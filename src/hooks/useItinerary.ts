@@ -73,7 +73,10 @@ export function resolvedPosition(step: Step, choices: Record<string, string>): L
 
 /** The polyline that arrives at steps[i]. */
 export function legFor(steps: Step[], i: number, choices: Record<string, string>) {
-  const from = resolvedPosition(steps[i - 1], choices);
+  const prev = steps[i - 1];
+  // When the previous decision selects *this* step (a variant), the chosen pin is the
+  // destination, so the leg starts from the previous stop itself.
+  const from = steps[i].variantsFor === prev.id ? prev.coordinates : resolvedPosition(prev, choices);
   return routeBetween(from, steps[i].coordinates);
 }
 

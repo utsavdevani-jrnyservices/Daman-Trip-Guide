@@ -101,7 +101,7 @@ const GuideSheet = forwardRef<HTMLDivElement, Props>(function GuideSheet(
                 <span
                   className="grid h-14 w-14 shrink-0 animate-bob place-items-center rounded-2xl"
                   style={{ background: `${accent}1f`, color: accent, boxShadow: `0 0 0 1px ${accent}40` }}
-                  dangerouslySetInnerHTML={{ __html: VEHICLE_SVG[transport].replace('width="22" height="22"', 'width="28" height="28"') }}
+                  dangerouslySetInnerHTML={{ __html: VEHICLE_SVG[transport].replace('width="24" height="24"', 'width="30" height="30"') }}
                 />
                 <div className="min-w-0 flex-1">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">{VEHICLE_LABEL[transport]} · en route</div>
@@ -260,6 +260,17 @@ const GuideSheet = forwardRef<HTMLDivElement, Props>(function GuideSheet(
                             className="mt-2 w-full resize-none rounded-2xl border bg-white/5 px-3.5 py-3 text-[15px] text-white placeholder:text-white/35 focus:outline-none"
                             style={{ borderColor: `${accent}66` }}
                           />
+                        )}
+                        {selected?.id === "suggest" && note.trim().length > 2 && (
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(note.trim() + " Daman")}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-2 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] font-semibold"
+                            style={{ borderColor: `${accent}66`, color: accent, background: `${accent}14` }}
+                          >
+                            <MapPin size={12} /> Check “{note.trim().slice(0, 28)}{note.trim().length > 28 ? "…" : ""}” on Google Maps <ExternalLink size={10} />
+                          </a>
                         )}
                       </div>
                     )}

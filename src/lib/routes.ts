@@ -13,12 +13,12 @@ const RAIL: LatLng[] = [
   [20.3735, 72.9084], // Vapi
 ];
 
-const ALL: { points: LatLng[]; km: number }[] = [
-  { points: RAIL, km: 170 },
+const ALL: { from: LatLng; to: LatLng; points: LatLng[]; km: number }[] = [
+  { from: RAIL[0], to: RAIL[RAIL.length - 1], points: RAIL, km: 170 },
   ...Object.values(ROUTES),
 ];
 
-const near = (a: LatLng, b: LatLng) => haversine(a, b) < 80;
+const near = (a: LatLng, b: LatLng) => haversine(a, b) < 30;
 
 /**
  * Real road / walking geometry between two points, looked up by endpoints
@@ -26,10 +26,10 @@ const near = (a: LatLng, b: LatLng) => haversine(a, b) < 80;
  */
 export function routeBetween(from: LatLng, to: LatLng): { points: LatLng[]; km: number } {
   for (const r of ALL) {
-    const first = r.points[0];
-    const last = r.points[r.points.length - 1];
-    if (near(first, from) && near(last, to)) return { points: [from, ...r.points.slice(1, -1), to], km: r.km };
-    if (near(first, to) && near(last, from)) return { points: [from, ...r.points.slice(1, -1).reverse(), to], km: r.km };
+    // Routes are matched on the endpoints they were requested for (OSRM snaps the
+    // geometry to the nearest road, which can be well away from the pin).
+    if (near(r.from, from) && near(r.to, to)) return { points: [from, ...r.points, to], km: r.km };
+    if (near(r.from, to) && near(r.to, from)) return { points: [from, ...[...r.points].reverse(), to], km: r.km };
   }
   return { points: [from, to], km: +(haversine(from, to) / 1000).toFixed(2) };
 }

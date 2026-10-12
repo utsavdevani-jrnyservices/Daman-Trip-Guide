@@ -112,7 +112,13 @@ export default function MapView(props: MapViewProps) {
   // Last measured sheet height per phase, so a flight can target the padding
   // the *next* phase will need before that sheet has rendered.
   const sheetSizes = useRef({ ...DEFAULT_SHEET });
-  if (sheetHeight > 0) sheetSizes.current[phase] = sheetHeight;
+  // Record after the sheet has re-laid out for the current phase. Doing this during the
+  // render that flips the phase would store the previous (idle) sheet's height as the
+  // "traveling" size and the leg fit would think almost no map is visible.
+  useEffect(() => {
+    if (sheetHeight > 0) sheetSizes.current[phase] = sheetHeight;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sheetHeight]);
 
   // Latest values the animation effect reads without re-triggering.
   const latest = useRef({ phase, activeLeg, step, onArrived, onProgress, accent });
@@ -254,6 +260,8 @@ export default function MapView(props: MapViewProps) {
       if (i > stepIndex || !s.choices) return;
       const chosen = s.choices.options.find((o) => o.id === choices[s.id]);
       if (!chosen || chosen.noPin) return;
+      // The pin becomes the next stop itself once we've moved on to it.
+      if (steps[i + 1]?.variantsFor === s.id && stepIndex > i) return;
       const m = new maplibregl.Marker({ element: choiceElement(chosen.emoji, DAY_ACCENT[s.day]), anchor: "bottom" })
         .setLngLat(toLngLat(chosen.coordinates))
         .addTo(map);
