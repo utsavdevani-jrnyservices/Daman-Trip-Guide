@@ -1,6 +1,6 @@
 # Deploys the app to GitHub Pages on every push to the listed branches.
-# One-time setup: Settings → Pages → Source: "GitHub Actions". Then this runs on
-# every push, or manually from the Actions tab via "Run workflow".
+# No manual setup: the configure-pages step enables Pages on first run. Then this
+# runs on every push, or manually from the Actions tab via "Run workflow".
 # Live URL: https://utsavdevani-jrnyservices.github.io/Daman-Trip-Guide/
 name: Deploy to GitHub Pages
 
@@ -23,6 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true # creates the Pages site on first run, no manual setup needed
       - uses: actions/setup-node@v4
         with:
           node-version: 20
