@@ -4,6 +4,7 @@ import MapView from "./components/MapView";
 import GuideSheet from "./components/GuideSheet";
 import TopBar from "./components/TopBar";
 import Timeline from "./components/Timeline";
+import DayTransition from "./components/DayTransition";
 import { useItinerary } from "./hooks/useItinerary";
 
 const ACCENT = { 1: "#f5b547", 2: "#2dd4bf" } as const;
@@ -17,6 +18,19 @@ export default function App() {
   const [progress, setProgress] = useState(0);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [overviewKey, setOverviewKey] = useState(0);
+  const [dayTransition, setDayTransition] = useState(false);
+  const lastIndex = useRef(it.state.stepIndex);
+
+  // Night → morning card when the plan moves forward from Day 1 into Day 2.
+  useEffect(() => {
+    const prev = lastIndex.current;
+    lastIndex.current = it.state.stepIndex;
+    if (it.state.stepIndex > prev && it.step.day === 2 && it.steps[prev]?.day === 1) {
+      setDayTransition(true);
+      const t = window.setTimeout(() => setDayTransition(false), 3600);
+      return () => window.clearTimeout(t);
+    }
+  }, [it.state.stepIndex, it.step.day, it.steps]);
 
   // Measure the sheet so the camera keeps the target in the visible map area.
   useEffect(() => {
@@ -95,6 +109,8 @@ export default function App() {
         onNote={it.setNote}
         onReset={it.reset}
       />
+
+      <DayTransition show={dayTransition} />
 
       <Timeline
         open={timelineOpen}
