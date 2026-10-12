@@ -4,7 +4,8 @@ import type { LatLng, Step, Transport } from "../types";
 import { legFor, resolvedPosition } from "../hooks/useItinerary";
 import { easeInOutCubic, partialPath, pointAlong, totalLength } from "../lib/geo";
 import { applyInkTheme, firstSymbolLayer, STYLE_URL } from "../lib/mapTheme";
-import { choiceElement, stopElement, vehicleElement } from "./mapIcons";
+import { choiceElement, stayElement, stopElement, vehicleElement } from "./mapIcons";
+import { MOUSTACHE } from "../data/itinerary";
 
 const TOP_INSET = 96; // px of UI chrome at the top of the viewport
 const ARRIVAL_PITCH = 48; // cinematic tilt when the camera settles on a stop
@@ -241,10 +242,19 @@ export default function MapView(props: MapViewProps) {
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
+    const atStay = (p: LatLng) => p[0] === MOUSTACHE[0] && p[1] === MOUSTACHE[1];
+    const currentAtStay = atStay(step.coordinates) && phase !== "traveling";
+
+    // The stay is always on the map with its own badge (unless the current marker is on it).
+    if (!currentAtStay) {
+      markersRef.current.push(new maplibregl.Marker({ element: stayElement(), anchor: "center" }).setLngLat(toLngLat(MOUSTACHE)).addTo(map));
+    }
+
     steps.forEach((s, i) => {
       if (i > stepIndex) return;
       const isCurrent = i === stepIndex;
       if (isCurrent && phase === "traveling") return;
+      if (!isCurrent && atStay(s.coordinates)) return; // covered by the stay badge
       const sameSpot = s.coordinates[0] === step.coordinates[0] && s.coordinates[1] === step.coordinates[1];
       if (!isCurrent && sameSpot && phase !== "traveling") return;
       const m = new maplibregl.Marker({

@@ -72,6 +72,11 @@ export function stopElement(opts: {
   return el(inner, `stop-wrap stop-${state}`, accent);
 }
 
+/** The stay: a permanent white house badge, independent of the day accent. */
+export function stayElement(): HTMLElement {
+  return el(`<div class="stay-core">${STOP_SVG.hostel}</div><div class="stay-label">Stay</div>`, "stay-wrap", "#ffffff");
+}
+
 /** Pin for a chosen decision (lunch / dinner). */
 export function choiceElement(emoji: string, accent: string): HTMLElement {
   return el(`<div class="choice-bubble">${emoji}</div><div class="choice-tail"></div>`, "choice-wrap", accent);
